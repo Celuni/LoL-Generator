@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>League_Itemset_Generator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="RiotSharp">
+      <HintPath>..\..\..\Downloads\RiotSharp-develop\RiotSharp-develop\RiotSharp\bin\Debug\netstandard1.3\RiotSharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
