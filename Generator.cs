@@ -1,209 +1,116 @@
-﻿using HtmlAgilityPack;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace League_Itemset_Generator
 {
 
     class Generator
     {
-        static void Main(string[] args)
+        static async System.Threading.Tasks.Task Main(string[] args)
         {
-            string json = JsonConvert.SerializeObject(new ItemSet("Anivia", "Mid"));
 
+            string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
+
+            string lockfile = "";
+            using (FileStream fs = File.Open(clientpath + @"\lockfile", FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                byte[] buf = new byte[1024];
+                int c;
+
+                while ((c = fs.Read(buf, 0, buf.Length)) > 0)
+                {
+                    lockfile = Encoding.UTF8.GetString(buf, 0, c);
+                }
+            }
+
+            string port = lockfile.Split(':')[2];
+            string password = lockfile.Split(':')[3];
+
+            byte[] encoding = Encoding.ASCII.GetBytes($"riot:{password}");
+
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true;
+
+            using (HttpClient httpClient = new HttpClient(handler))
+            {
+                using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("GET"), $"https://127.0.0.1:{port}/swagger/v3/openapi.json"))
+                {
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
+                }
+
+                long summonerId;
+                using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("GET"), $"https://127.0.0.1:{port}/lol-summoner/v1/current-summoner"))
+                {
+                    request.Headers.TryAddWithoutValidation("Accept", "application/json");
+                    request.Headers.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(encoding));
+
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
+
+                    SummonerInfo jsonData = JsonConvert.DeserializeObject<SummonerInfo>(await response.Content.ReadAsStringAsync());
+
+                    summonerId = jsonData.summonerId;
+                }
+
+
+                using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod("GET"), $"https://127.0.0.1:{port}/lol-champ-select/v1/session"))
+                {
+                    request.Headers.TryAddWithoutValidation("Accept", "application/json");
+                    request.Headers.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(encoding));
+
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
+
+                    Session jsonData = JsonConvert.DeserializeObject<Session>(await response.Content.ReadAsStringAsync());
+
+                    Console.WriteLine(jsonData.myTeam.FirstOrDefault(x => x.summonerId == summonerId).championId);
+                }
+            }
+
+            /*string json = JsonConvert.SerializeObject(new ItemSet("Anivia", "Mid"), Formatting.Indented);
             using (var tw = new StreamWriter(@"C:\Users\tavinc\Documents\test.json", false))
             {
                 tw.WriteLine(json);
                 tw.Close();
             }
-            Console.WriteLine(json);
+            Console.WriteLine(json);*/
         }
-    }
 
-        class ItemSet
-    {
-        public string map = "any";
-
-        public List<Category> blocks;
-
-        public string title;
-
-        public string priority = "false";
-
-        public string mode = "any";
-
-        public string type = "custom";
-
-        public int sortrank = 1;
-
-        public string champion;
-
-        public ItemSet(string name, string pos)
+        [Flags]
+        private enum ProcessAccessFlags : uint
         {
-            blocks = new List<Category>();
-            title = name + " " + pos;
-            champion = name.ToLower();
-
-            Utility.allItemIds = new List<string>();
-
-            blocks.Add(new Category(name: "Starters", champion: champion, role: pos));
-            blocks.Add(new Category(name: "Core Build", champion: champion, role: pos));
-            blocks.Add(new Category(name: "Other Items", champion: champion, role: pos));
+            QueryLimitedInformation = 0x00001000
         }
-    }
 
-    class Category
-    {
-        public string type;
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool QueryFullProcessImageName(
+              [In] IntPtr hProcess,
+              [In] int dwFlags,
+              [Out] StringBuilder lpExeName,
+              ref int lpdwSize);
 
-        public List<Item> items;
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenProcess(
+         ProcessAccessFlags processAccess,
+         bool bInheritHandle,
+         int processId);
 
-        public Category(string name, string champion, string role)
+        static String GetProcessFilename(Process p)
         {
-            items = new List<Item>();
-            type = name;
-
-            HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
-
-            switch (type)
+            int capacity = 2000;
+            StringBuilder builder = new StringBuilder(capacity);
+            IntPtr ptr = OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, p.Id);
+            if (!QueryFullProcessImageName(ptr, 0, builder, ref capacity))
             {
-                case "Starters":
-                    HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(Utility.paths["Skill Order"]);
-
-                    type += " | Skills: ";
-                    for (int i = 0; i < 4; i++)
-                    {
-                        type += nodes[i].InnerText.Trim();
-                        if (i < 3)
-                        {
-                            type += ".";
-                        }
-                    }
-
-                    nodes = htmlDoc.DocumentNode.SelectNodes(Utility.paths["Upgrade Order"]);
-
-                    type += " - ";
-                    for (int i = 0; i < 3; i++)
-                    {
-                        type += nodes[i].InnerText;
-                        if (i < 2)
-                        {
-                            type += ">";
-                        }
-                    }
-
-                    foreach (string id in getItemIds(htmlDoc, name).Reverse<string>())
-                    {
-                        Item newItem = new Item();
-
-                        newItem.id = id;
-                        newItem.count = (id == "2003") ? 2 : 1;
-
-                        items.Add(newItem);
-                    }
-
-                    break;
-
-                case "Core Build":
-                    foreach (string id in getItemIds(htmlDoc, "Most Common Boot").Concat(getItemIds(htmlDoc, name)))
-                    {
-                        Item newItem = new Item();
-
-                        newItem.id = id;
-                        newItem.count = 1;
-
-                        items.Add(newItem);
-                    }
-
-                    break;
-
-                case "Other Items":
-                    foreach (string id in getItemIds(htmlDoc, name))
-                    {
-                        Item newItem = new Item();
-
-                        newItem.id = id;
-                        newItem.count = 1;
-
-                        items.Add(newItem);
-                    }
-
-                    Item temp = items[0];
-                    items[0] = items[items.Count-2];
-                    items[items.Count - 2] = temp;
-
-                    temp = items[1];
-                    items[1] = items[items.Count - 1];
-                    items[items.Count - 1] = temp;
-
-                    /* WebClient client = new WebClient();
-                    Stream stream = client.OpenRead("http://ddragon.leagueoflegends.com/cdn/10.16.1/data/en_US/champion/Aatrox.json");
-                    StreamReader reader = new StreamReader(stream);
-
-                    dynamic DynamicData = JsonConvert.DeserializeObject(reader.ReadLine());
-
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[6].items.Count);
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[6].items[1].id);
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[6].items[2].id);
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[7].items[0].id);
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[7].items[1].id);
-                    Console.WriteLine(DynamicData.data.Aatrox.recommended[4].blocks[7].items[2].id);*/
-
-                    break;
-            }
-        }
-
-        List<string> getItemIds(HtmlDocument htmlDoc, string itemtype)
-        {
-            List<String> itemIds = new List<String>();
-
-            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(Utility.paths[itemtype]))
-            {
-                MatchCollection regex = Regex.Matches(node.GetAttributeValue("src", "nothing"), @"\b(\d{4})\b");
-
-                if (regex.Count > 0)
-                {
-                    string id = regex[0].ToString();
-
-                    if (!Utility.allItemIds.Contains(id))
-                    {
-                        itemIds.Add(id);
-
-                        Utility.allItemIds.Add(id);
-                    }
-                }
+                return String.Empty;
             }
 
-            return itemIds;
+            return builder.ToString();
         }
     }
 
-    class Item
-    {
-        public string id { get; set; }
-        public int count { get; set; }
-    }
-
-    static class Utility
-    {
-        public static Dictionary<string, string> paths = new Dictionary<string, string>()
-            {
-                {"Starters", "//text()[contains(., 'Starter Items')]/ancestor::tr[1]//img"},
-                {"Skill Order", "//table[@class='champion-skill-build__table']//td"},
-                {"Upgrade Order",  "//table[@class='champion-skill-build__table']//td/ancestor::td[1]//ul//span"},
-                {"Core Build","//text()[contains(., 'Recommended Builds')]/ancestor::tr[1]//img"},
-                {"Most Common Boot", "//text()[contains(., 'Boots')]/ancestor::tr[1]//img"},
-                {"Other Items", "//text()[contains(., 'Recommended Builds')]/ancestor::tbody[1]//img"}
-            };
-
-        public static List<string> allItemIds;
-    }
-
-
-}
-
-
+}    
