@@ -1,10 +1,11 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace League_Itemset_Generator
+namespace LoL_Generator
 {
     class ItemSet
     {
@@ -24,18 +25,18 @@ namespace League_Itemset_Generator
 
         public string champion;
 
-        public ItemSet(string name, string pos)
+        public ItemSet(string name, string role)
         {
             blocks = new List<Category>();
-            title = name + " " + pos;
+            title = name + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower());
             champion = name.ToLower();
 
             Utility.allItemIds = new List<string>();
 
-            blocks.Add(new Category(name: "Consumables", champion: champion, role: pos));
-            blocks.Add(new Category(name: "Starters", champion: champion, role: pos));
-            blocks.Add(new Category(name: "Core Build", champion: champion, role: pos));
-            blocks.Add(new Category(name: "Other Items", champion: champion, role: pos));
+            blocks.Add(new Category(name: "Consumables", champion: champion, role: role));
+            blocks.Add(new Category(name: "Starters", champion: champion, role: role));
+            blocks.Add(new Category(name: "Core Build", champion: champion, role: role));
+            blocks.Add(new Category(name: "Other Items", champion: champion, role: role));
         }
     }
 
@@ -55,7 +56,7 @@ namespace League_Itemset_Generator
             switch (type)
             {
                 case "Consumables":
-                    HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(Utility.paths["Skill Order"]);
+                    HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths["Skill Order"]);
 
                     type += " | Skills: ";
                     for (int i = 0; i < 4; i++)
@@ -67,7 +68,7 @@ namespace League_Itemset_Generator
                         }
                     }
 
-                    nodes = htmlDoc.DocumentNode.SelectNodes(Utility.paths["Upgrade Order"]);
+                    nodes = htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths["Upgrade Order"]);
 
                     type += " - ";
                     for (int i = 0; i < 3; i++)
@@ -119,13 +120,13 @@ namespace League_Itemset_Generator
         {
             List<String> itemIds = new List<String>();
 
-            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(Utility.paths[itemtype]))
+            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths[itemtype]))
             {
                 MatchCollection regex = Regex.Matches(node.GetAttributeValue("src", "nothing"), @"\b(\d{4})\b");
 
                 if (regex.Count > 0)
                 {
-                    string id = regex[0].ToString();
+                    string id = regex[0].Value;
 
                     if (!Utility.allItemIds.Contains(id))
                     {
@@ -161,7 +162,7 @@ namespace League_Itemset_Generator
 
     static class Utility
     {
-        public static Dictionary<string, string> paths = new Dictionary<string, string>()
+        public static Dictionary<string, string> Xpaths = new Dictionary<string, string>()
             {
                 {"Starters", "//text()[contains(., 'Starter Items')]/ancestor::tr[1]//img"},
                 {"Skill Order", "//table[@class='champion-skill-build__table']//td"},
