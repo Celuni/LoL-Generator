@@ -14,6 +14,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -21,23 +22,23 @@ namespace LoL_Generator
 {
     class Generator
     {
-        static Timer timer;
-
         static string lockfileloc;
 
         static string port;
         static string password;
         static byte[] encoding;
-        static long summonerId;
 
         static bool champLocked;
 
         static HttpClient httpClient;
         static HttpClientHandler handler;
 
+        static CancellationTokenSource tokenSource;
+
         static void Main(string[] args)
         {
-            StartTimer(3000, InitiatePolling);
+            tokenSource = new CancellationTokenSource();
+            StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
 
             /*string json = JsonConvert.SerializeObject(new ItemSet("Anivia", "Mid"), Formatting.Indented);
             using (var tw = new StreamWriter(@"C:\Users\tavinc\Documents\test.json", false))
@@ -48,39 +49,30 @@ namespace LoL_Generator
             Console.WriteLine(json);*/
 
         }
-
-        static void StartTimer(int interval, Action<object, EventArgs> function)
-        {
-            timer = new Timer(interval);
-            timer.Elapsed += new ElapsedEventHandler(function);
-            timer.AutoReset = true;
-
-            timer.Enabled = true;
-            Console.ReadLine();
-        }
-
+       
         static bool CheckClientIsOpen()
         {
             return Process.GetProcessesByName("LeagueClient").FirstOrDefault() != null;
         }
 
-        static void InitiatePolling(object source, EventArgs e)
+        static void InitiatePolling()
         {
             Console.WriteLine("Waiting for LeagueClient.exe to start...");
 
             if (CheckClientIsOpen())
             {
                 Console.WriteLine("LeagueClient.exe has been opened");
-                timer.Stop();
+                tokenSource.Cancel();
 
                 string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
                 lockfileloc = clientpath + @"\lockfile";
 
-                StartTimer(500, CheckLockFileExists);
+                tokenSource = new CancellationTokenSource();
+                StartNewTask(CheckLockFileExists, TimeSpan.FromSeconds(0.5), tokenSource.Token);
             }
         }
 
-        static void CheckLockFileExists(object source, EventArgs e)
+        static void CheckLockFileExists()
         {
             Console.WriteLine("Waiting for lockfile to be created...");
 
@@ -89,7 +81,7 @@ namespace LoL_Generator
                 if (File.Exists(lockfileloc))
                 {
                     Console.WriteLine("lockfile has been created");
-                    timer.Stop();
+                    tokenSource.Cancel();
 
                     string lockfile = "";
                     using (FileStream fs = File.Open(lockfileloc, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -111,19 +103,21 @@ namespace LoL_Generator
                     handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true;
                     httpClient = new HttpClient(handler);
 
-                    StartTimer(500, CheckInChampSelect);
+                    tokenSource = new CancellationTokenSource();
+                    StartNewTask(CheckInChampSelect, TimeSpan.FromSeconds(0.5), tokenSource.Token);
                 }
             }
             else
             {
                 Console.WriteLine("LeagueClient.exe has stopped.");
-                timer.Stop();
+                tokenSource.Cancel();
 
-                StartTimer(3000, InitiatePolling);
+                tokenSource = new CancellationTokenSource();
+                StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
             }
         }
 
-        static async void CheckInChampSelect(object source, EventArgs e)
+        static async void CheckInChampSelect()
         {
             if (CheckClientIsOpen())
             {
@@ -134,13 +128,6 @@ namespace LoL_Generator
                     if (gamephase == "\"ChampSelect\"" && !champLocked)
                     {
                         Console.WriteLine("In Champion Select");
-
-                        if (summonerId == default)
-                        {
-                            string summonerJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-summoner/v1/current-summoner", null);
-                            SummonerInfo summonerJsonObject = JsonConvert.DeserializeObject<SummonerInfo>(summonerJson);
-                            summonerId = summonerJsonObject.summonerId;
-                        }
 
                         string championId = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-champ-select/v1/current-champion", null);
 
@@ -183,7 +170,7 @@ namespace LoL_Generator
                             }
                         }
                     }
-                    else
+                    if (gamephase != "\"ChampSelect\"")
                     {
                         Console.WriteLine("Waiting for champion select to start/restart...");
 
@@ -198,13 +185,14 @@ namespace LoL_Generator
             else
             {
                 Console.WriteLine("LeagueClient.exe has stopped.");
-                timer.Stop();
+                tokenSource.Cancel();
 
-                StartTimer(3000, InitiatePolling);
+                tokenSource = new CancellationTokenSource();
+                StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
             }
         }
                         
-            static async Task<string> SendRequestAsync(string method, string url, string json)
+        static async Task<string> SendRequestAsync(string method, string url, string json)
         {
             using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
             {
@@ -228,27 +216,31 @@ namespace LoL_Generator
             return null;
         }
 
-        public class Error
+        public static void StartNewTask(Action action,
+        TimeSpan pollInterval,
+        CancellationToken token,
+        TaskCreationOptions taskCreationOptions = TaskCreationOptions.None)
         {
-            public string errorCode;
-            public int httpStatus;
-        }
-
-        public class SummonerInfo
-        {
-            public long summonerId { get; set; }
-        }
-                
-        public class ChampionInfo
-        {
-            public int id { get; set; }
-            public string name { get; set; }
-        }
-
-        public class RunePageInfo
-        {
-            public int id;
-            public string name;
+            Task.Factory.StartNew(
+                () =>
+                {
+                    do
+                    {
+                        try
+                        {
+                            action();
+                            if (token.WaitHandle.WaitOne(pollInterval)) break;
+                        }
+                        catch
+                        {
+                            return;
+                        }
+                    }
+                    while (true);
+                },
+                token,
+                taskCreationOptions,
+                TaskScheduler.Default).Wait();
         }
 
         [Flags]
@@ -286,4 +278,16 @@ namespace LoL_Generator
         }
     }
 
+    public class ChampionInfo
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+    }
+
+    public class RunePageInfo
+    {
+        public int id;
+        public string name;
+    }
+       
 }    
