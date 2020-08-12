@@ -4,108 +4,40 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace LoL_Generator
 {
-
     class Generator
     {
-        static async System.Threading.Tasks.Task Main(string[] args)
+        static Timer timer;
+
+        static string lockfileloc;
+
+        static string port;
+        static string password;
+        static byte[] encoding;
+        static long summonerId;
+
+        static bool champLocked;
+
+        static HttpClient httpClient;
+        static HttpClientHandler handler;
+
+        static void Main(string[] args)
         {
-            //string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
-
-            // Create event query to be notified within 1 second of
-            // a change in a service
-            WqlEventQuery query =
-                new WqlEventQuery("__InstanceCreationEvent",
-                new TimeSpan(0, 0, 1),
-                "TargetInstance isa \"Win32_Process\"");
-
-            // Initialize an event watcher and subscribe to events
-            // that match this query
-            ManagementEventWatcher watcher =
-                new ManagementEventWatcher();
-            watcher.Query = query;
-
-
-            // Block until the next event occurs
-            // Note: this can be done in a loop if waiting for
-            //        more than one occurrence
-            Console.WriteLine(
-                "Open an application (notepad.exe) to trigger an event.");
-            ManagementBaseObject e = watcher.WaitForNextEvent();
-
-            //Display information from the event
-            Console.WriteLine(
-                "Process {0} has been created, path is: {1}",
-                ((ManagementBaseObject)e
-                ["TargetInstance"])["Name"],
-                ((ManagementBaseObject)e
-                ["TargetInstance"])["ExecutablePath"]);
-
-
-
-
-            /*string lockfile = "";
-            using (FileStream fs = File.Open(clientpath + @"\lockfile", FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                byte[] buf = new byte[1024];
-                int c;
-
-                while ((c = fs.Read(buf, 0, buf.Length)) > 0)
-                {
-                    lockfile = Encoding.UTF8.GetString(buf, 0, c);
-                }
-            }
-
-            SessionInfo.port = lockfile.Split(':')[2];
-            SessionInfo.password = lockfile.Split(':')[3];
-            SessionInfo.encoding = Encoding.ASCII.GetBytes($"riot:{SessionInfo.password}");
-
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true;
-
-            using (HttpClient httpClient = new HttpClient(handler))
-            {
-                await sendRequestAsync(httpClient, "GET", $"https://127.0.0.1:{SessionInfo.port}/swagger/v3/openapi.json", null);
-
-                string summonerJson = await sendRequestAsync(httpClient, "GET", $"https://127.0.0.1:{SessionInfo.port}/lol-summoner/v1/current-summoner", null);
-
-                SummonerInfo summonerJsonObject = JsonConvert.DeserializeObject<SummonerInfo>(summonerJson);
-                long summonerId = summonerJsonObject.summonerId;
-
-                string gameJson = await sendRequestAsync(httpClient, "GET", $"https://127.0.0.1:{SessionInfo.port}/lol-champ-select/v1/session", null);
-                GameSession gameJsonObject = JsonConvert.DeserializeObject<GameSession>(gameJson);
-
-                int championId = gameJsonObject.myTeam.FirstOrDefault(x => x.summonerId == summonerId).championId;
-
-                string championJson = await sendRequestAsync(httpClient, "GET", $"http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions/{championId}.json", null);
-                ChampionInfo championJsonObject = JsonConvert.DeserializeObject<ChampionInfo>(championJson);
-
-                string champion = championJsonObject.name;
-
-                HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/");
-                string xpath = $"//ul[@class='champion-stats-position']//li";
-
-                foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
-                {
-                    string role = node.GetAttributeValue("data-position", "nothing");
-
-                    RunePage runePage = new RunePage(champion, role);
-
-                    string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
-
-                    await sendRequestAsync(httpClient, "POST", $"https://127.0.0.1:{SessionInfo.port}/lol-perks/v1/pages", runeJson);
-                }
-            }
+            StartTimer(3000, InitiatePolling);
 
             /*string json = JsonConvert.SerializeObject(new ItemSet("Anivia", "Mid"), Formatting.Indented);
             using (var tw = new StreamWriter(@"C:\Users\tavinc\Documents\test.json", false))
@@ -114,16 +46,172 @@ namespace LoL_Generator
                 tw.Close();
             }
             Console.WriteLine(json);*/
+
         }
 
-        static async System.Threading.Tasks.Task<string> sendRequestAsync(HttpClient httpClient, string method, string url, string json)
+        static void StartTimer(int interval, Action<object, EventArgs> function)
+        {
+            timer = new Timer(interval);
+            timer.Elapsed += new ElapsedEventHandler(function);
+            timer.AutoReset = true;
+
+            timer.Enabled = true;
+            Console.ReadLine();
+        }
+
+        static bool CheckClientIsOpen()
+        {
+            return Process.GetProcessesByName("LeagueClient").FirstOrDefault() != null;
+        }
+
+        static void InitiatePolling(object source, EventArgs e)
+        {
+            Console.WriteLine("Waiting for LeagueClient.exe to start...");
+
+            if (CheckClientIsOpen())
+            {
+                Console.WriteLine("LeagueClient.exe has been opened");
+                timer.Stop();
+
+                string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
+                lockfileloc = clientpath + @"\lockfile";
+
+                StartTimer(500, CheckLockFileExists);
+            }
+        }
+
+        static void CheckLockFileExists(object source, EventArgs e)
+        {
+            Console.WriteLine("Waiting for lockfile to be created...");
+
+            if (CheckClientIsOpen())
+            {
+                if (File.Exists(lockfileloc))
+                {
+                    Console.WriteLine("lockfile has been created");
+                    timer.Stop();
+
+                    string lockfile = "";
+                    using (FileStream fs = File.Open(lockfileloc, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        byte[] buf = new byte[1024];
+                        int c;
+
+                        while ((c = fs.Read(buf, 0, buf.Length)) > 0)
+                        {
+                            lockfile = Encoding.UTF8.GetString(buf, 0, c);
+                        }
+                    }
+
+                    port = lockfile.Split(':')[2];
+                    password = lockfile.Split(':')[3];
+                    encoding = Encoding.ASCII.GetBytes($"riot:{password}");
+
+                    handler = new HttpClientHandler();
+                    handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true;
+                    httpClient = new HttpClient(handler);
+
+                    StartTimer(500, CheckInChampSelect);
+                }
+            }
+            else
+            {
+                Console.WriteLine("LeagueClient.exe has stopped.");
+                timer.Stop();
+
+                StartTimer(3000, InitiatePolling);
+            }
+        }
+
+        static async void CheckInChampSelect(object source, EventArgs e)
+        {
+            if (CheckClientIsOpen())
+            {
+                try
+                {
+                    string gamephase = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-gameflow/v1/gameflow-phase", null);
+
+                    if (gamephase == "\"ChampSelect\"" && !champLocked)
+                    {
+                        Console.WriteLine("In Champion Select");
+
+                        if (summonerId == default)
+                        {
+                            string summonerJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-summoner/v1/current-summoner", null);
+                            SummonerInfo summonerJsonObject = JsonConvert.DeserializeObject<SummonerInfo>(summonerJson);
+                            summonerId = summonerJsonObject.summonerId;
+                        }
+
+                        string championId = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-champ-select/v1/current-champion", null);
+
+                        if (championId != "0" && !champLocked)
+                        {
+                            Console.WriteLine("A Champion has been locked in, generating rune page(s) and item set(s)...");
+                            champLocked = true;
+
+                            string championJson = await SendRequestAsync("GET", $"http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions/{championId}.json", null);
+                            ChampionInfo championJsonObject = JsonConvert.DeserializeObject<ChampionInfo>(championJson);
+
+                            string champion = championJsonObject.name;
+
+                            HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/");
+                            string xpath = $"//ul[@class='champion-stats-position']//li";
+
+                            string runePagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-perks/v1/pages", null);
+                            List<RunePageInfo> runePageObject = JsonConvert.DeserializeObject<List<RunePageInfo>>(runePagesJson);
+
+                            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
+                            {
+                                string role = node.GetAttributeValue("data-position", "nothing");
+
+                                RunePage runePage = new RunePage(champion, role);
+
+                                string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
+
+                                if (runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())) != null)
+                                {
+                                    Console.WriteLine("Modifying rune page for " + champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()));
+
+                                    int id = runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())).id;
+
+                                    await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
+                                }
+                                else
+                                {
+                                    await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Waiting for champion select to start/restart...");
+
+                        champLocked = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+            }
+            else
+            {
+                Console.WriteLine("LeagueClient.exe has stopped.");
+                timer.Stop();
+
+                StartTimer(3000, InitiatePolling);
+            }
+        }
+                        
+            static async Task<string> SendRequestAsync(string method, string url, string json)
         {
             using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
             {
                 request.Headers.TryAddWithoutValidation("Accept", "application/json");
-                request.Headers.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(SessionInfo.encoding));
+                request.Headers.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(encoding));
 
-                if (method == "POST")
+                if (method == "POST" || method == "PUT")
                 {
                     request.Content = new StringContent(json);
                     request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
@@ -140,34 +228,27 @@ namespace LoL_Generator
             return null;
         }
 
+        public class Error
+        {
+            public string errorCode;
+            public int httpStatus;
+        }
+
         public class SummonerInfo
         {
             public long summonerId { get; set; }
         }
-
-        public class GameSession
-        {
-            public List<MyTeam> myTeam { get; set; }
-        }
-
-        public class MyTeam
-        {
-            public int championId { get; set; }
-            public int championPickIntent { get; set; }
-            public long summonerId { get; set; }
-        }
-
+                
         public class ChampionInfo
         {
             public int id { get; set; }
             public string name { get; set; }
         }
 
-        static class SessionInfo
+        public class RunePageInfo
         {
-            public static string port;
-            public static string password;
-            public static byte[] encoding;
+            public int id;
+            public string name;
         }
 
         [Flags]
@@ -194,15 +275,7 @@ namespace LoL_Generator
             int capacity = 2000;
             StringBuilder builder = new StringBuilder(capacity);
 
-            IntPtr ptr;
-            try
-            {
-                ptr = OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, p.Id);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            IntPtr ptr = OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, p.Id);
 
             if (!QueryFullProcessImageName(ptr, 0, builder, ref capacity))
             {

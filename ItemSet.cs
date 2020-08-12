@@ -80,13 +80,13 @@ namespace LoL_Generator
                         }
                     }
 
-                    addItemIds(new List<string>() { "2003", "2031", "2033", "2055", "2004", "3364", "3363", "2032", "2138", "2140", "2139" });
+                    AddItemIds(new List<string>() { "2003", "2031", "2033", "2055", "2004", "3364", "3363", "2032", "2138", "2140", "2139" });
 
                     items[0].count = 1;
 
                     break;
                 case "Starters":
-                    addItemIds(getItemIds(htmlDoc, name).Reverse<string>());
+                    AddItemIds(GetItemIds(htmlDoc, name).Reverse<string>());
 
                     Item ward = new Item();
                     ward.id = "3340";
@@ -97,12 +97,12 @@ namespace LoL_Generator
                     break;
 
                 case "Core Build":
-                    addItemIds(getItemIds(htmlDoc, "Most Common Boot").Concat(getItemIds(htmlDoc, name)));
+                    AddItemIds(GetItemIds(htmlDoc, "Most Common Boot").Concat(GetItemIds(htmlDoc, name)));
 
                     break;
 
                 case "Other Items":
-                    addItemIds(getItemIds(htmlDoc, name));
+                    AddItemIds(GetItemIds(htmlDoc, name));
 
                     Item temp = items[0];
                     items[0] = items[items.Count - 2];
@@ -116,7 +116,7 @@ namespace LoL_Generator
             }
         }
 
-        List<string> getItemIds(HtmlDocument htmlDoc, string itemtype)
+        List<string> GetItemIds(HtmlDocument htmlDoc, string itemtype)
         {
             List<String> itemIds = new List<String>();
 
@@ -140,7 +140,7 @@ namespace LoL_Generator
             return itemIds;
         }
 
-        void addItemIds(IEnumerable<string> itemIds)
+        void AddItemIds(IEnumerable<string> itemIds)
         {
             foreach (string id in itemIds)
             {

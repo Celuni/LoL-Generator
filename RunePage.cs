@@ -12,19 +12,19 @@ namespace LoL_Generator
     {
         public List<int> autoModifiedSelections;
 
-        public bool current = false;
+        public bool current;
 
         public int id;
 
         public bool isActive;
 
-        public bool isDeletable = true;
+        public bool isDeletable;
 
-        public bool isEditable = true;
+        public bool isEditable;
 
         public bool isValid;
 
-        public int lastModified;
+        public long lastModified;
 
         public string name;
 
