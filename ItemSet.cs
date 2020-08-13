@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,46 +8,60 @@ using System.Text.RegularExpressions;
 
 namespace LoL_Generator
 {
-    class ItemSet
+    public class ItemSet
     {
-        public string map = "any";
+        public List<int> associatedChampions;
 
-        public List<Category> blocks;
+        public List<int> associatedMaps = new List<int>() { 11 };
+
+        public List<Block> blocks;
+
+        public string map = "SR";
+
+        public string mode;
+
+        public List<PreferredItemSlot> preferredItemSlots;
+
+        public int sortrank;
+
+        public string startedFrom;
 
         public string title;
 
-        public string priority = "false";
-
-        public string mode = "any";
-
-        public string type = "custom";
-
-        public int sortrank = 1;
-
-        public string champion;
-
-        public ItemSet(string name, string role)
-        {
-            blocks = new List<Category>();
-            title = name + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower());
-            champion = name.ToLower();
-
-            Utility.allItemIds = new List<string>();
-
-            blocks.Add(new Category(name: "Consumables", champion: champion, role: role));
-            blocks.Add(new Category(name: "Starters", champion: champion, role: role));
-            blocks.Add(new Category(name: "Core Build", champion: champion, role: role));
-            blocks.Add(new Category(name: "Other Items", champion: champion, role: role));
-        }
-    }
-
-    class Category
-    {
-        public List<Item> items;
-
         public string type;
 
-        public Category(string name, string champion, string role)
+        public string uid;
+
+        public ItemSet(string champion, string role, int id)
+        {
+            associatedChampions = new List<int>() { id };
+
+            blocks = new List<Block>();
+            title = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower());
+
+            ItemUtility.allItemIds = new List<string>();
+
+            blocks.Add(new Block(name: "Consumables", champion: champion, role: role));
+            blocks.Add(new Block(name: "Starters", champion: champion, role: role));
+            blocks.Add(new Block(name: "Core Build", champion: champion, role: role));
+            blocks.Add(new Block(name: "Other Items", champion: champion, role: role));
+        }
+
+        [JsonConstructor]
+        public ItemSet(){}
+    }
+
+    public class Block
+    {
+        public string hideIfSummonerSpell;
+
+        public List<Item> items;
+
+        public string showIfSummonerSpell;
+
+        public string type;
+               
+        public Block(string name, string champion, string role)
         {
             items = new List<Item>();
             type = name;
@@ -56,7 +71,7 @@ namespace LoL_Generator
             switch (type)
             {
                 case "Consumables":
-                    HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths["Skill Order"]);
+                    HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(ItemUtility.Xpaths["Skill Order"]);
 
                     type += " | Skills: ";
                     for (int i = 0; i < 4; i++)
@@ -68,7 +83,7 @@ namespace LoL_Generator
                         }
                     }
 
-                    nodes = htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths["Upgrade Order"]);
+                    nodes = htmlDoc.DocumentNode.SelectNodes(ItemUtility.Xpaths["Upgrade Order"]);
 
                     type += " - ";
                     for (int i = 0; i < 3; i++)
@@ -80,7 +95,7 @@ namespace LoL_Generator
                         }
                     }
 
-                    AddItemIds(new List<string>() { "2003", "2031", "2033", "2055", "2004", "3364", "3363", "2032", "2138", "2140", "2139" });
+                    AddItemIds(new List<string>() { "2003", "2031", "2033", "2055", "3364", "3363", "2138", "2140", "2139" });
 
                     items[0].count = 1;
 
@@ -120,7 +135,7 @@ namespace LoL_Generator
         {
             List<String> itemIds = new List<String>();
 
-            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(Utility.Xpaths[itemtype]))
+            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(ItemUtility.Xpaths[itemtype]))
             {
                 MatchCollection regex = Regex.Matches(node.GetAttributeValue("src", "nothing"), @"\b(\d{4})\b");
 
@@ -128,11 +143,11 @@ namespace LoL_Generator
                 {
                     string id = regex[0].Value;
 
-                    if (!Utility.allItemIds.Contains(id))
+                    if (!ItemUtility.allItemIds.Contains(id))
                     {
                         itemIds.Add(id);
 
-                        Utility.allItemIds.Add(id);
+                        ItemUtility.allItemIds.Add(id);
                     }
                 }
             }
@@ -152,15 +167,24 @@ namespace LoL_Generator
                 items.Add(newItem);
             }
         }
+
+        [JsonConstructor]
+        public Block(){}
     }
 
-    class Item
+    public class Item
     {
-        public string id { get; set; }
-        public int count { get; set; }
+        public string id;
+        public int count;
     }
 
-    static class Utility
+    public class PreferredItemSlot
+    {
+        public string id;
+        public int preferredItemSlot;
+    }
+
+    public static class ItemUtility
     {
         public static Dictionary<string, string> Xpaths = new Dictionary<string, string>()
             {

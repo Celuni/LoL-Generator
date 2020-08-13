@@ -35,31 +35,70 @@ namespace LoL_Generator
 
         static CancellationTokenSource tokenSource;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            tokenSource = new CancellationTokenSource();
-            StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
+            /* tokenSource = new CancellationTokenSource();
+             StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);*/
 
-            /*string json = JsonConvert.SerializeObject(new ItemSet("Anivia", "Mid"), Formatting.Indented);
-            using (var tw = new StreamWriter(@"C:\Users\tavinc\Documents\test.json", false))
+            string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
+            lockfileloc = clientpath + @"\lockfile";
+
+            string lockfile = "";
+            using (FileStream fs = File.Open(lockfileloc, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                tw.WriteLine(json);
-                tw.Close();
+                byte[] buf = new byte[1024];
+                int c;
+
+                while ((c = fs.Read(buf, 0, buf.Length)) > 0)
+                {
+                    lockfile = Encoding.UTF8.GetString(buf, 0, c);
+                }
             }
-            Console.WriteLine(json);*/
+
+            port = lockfile.Split(':')[2];
+            password = lockfile.Split(':')[3];
+            encoding = Encoding.ASCII.GetBytes($"riot:{password}");
+
+            handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true;
+            httpClient = new HttpClient(handler);
+
+            string summonerJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-summoner/v1/current-summoner", null);
+            SummonerInfo summonerJsonObject = JsonConvert.DeserializeObject<SummonerInfo>(summonerJson);
+
+            string summonerId = summonerJsonObject.summonerId;
+
+            string itemPagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-item-sets/v1/item-sets/{summonerId}/sets", null);
+            ItemSets itemPagesObject = JsonConvert.DeserializeObject<ItemSets>(itemPagesJson);
+
+            itemPagesObject.itemSets.Add(new ItemSet("Annie", "Mid", 1));
+
+            string itemsetsJson = JsonConvert.SerializeObject(itemPagesObject, Formatting.Indented);
+            Console.WriteLine(itemsetsJson);
 
         }
-       
+
         static bool CheckClientIsOpen()
         {
-            return Process.GetProcessesByName("LeagueClient").FirstOrDefault() != null;
+            if (Process.GetProcessesByName("LeagueClient").FirstOrDefault() == null)
+            {
+                Console.WriteLine("LeagueClient.exe has stopped.");
+                tokenSource.Cancel();
+
+                tokenSource = new CancellationTokenSource();
+                StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
+
+                return false;
+            }
+
+            return true;
         }
 
         static void InitiatePolling()
         {
             Console.WriteLine("Waiting for LeagueClient.exe to start...");
 
-            if (CheckClientIsOpen())
+            if (Process.GetProcessesByName("LeagueClient").FirstOrDefault() != null)
             {
                 Console.WriteLine("LeagueClient.exe has been opened");
                 tokenSource.Cancel();
@@ -106,14 +145,6 @@ namespace LoL_Generator
                     tokenSource = new CancellationTokenSource();
                     StartNewTask(CheckInChampSelect, TimeSpan.FromSeconds(0.5), tokenSource.Token);
                 }
-            }
-            else
-            {
-                Console.WriteLine("LeagueClient.exe has stopped.");
-                tokenSource.Cancel();
-
-                tokenSource = new CancellationTokenSource();
-                StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
             }
         }
 
@@ -182,16 +213,8 @@ namespace LoL_Generator
                     Console.WriteLine("Error: " + ex.Message);
                 }
             }
-            else
-            {
-                Console.WriteLine("LeagueClient.exe has stopped.");
-                tokenSource.Cancel();
-
-                tokenSource = new CancellationTokenSource();
-                StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
-            }
         }
-                        
+
         static async Task<string> SendRequestAsync(string method, string url, string json)
         {
             using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
@@ -280,8 +303,8 @@ namespace LoL_Generator
 
     public class ChampionInfo
     {
-        public int id { get; set; }
-        public string name { get; set; }
+        public int id;
+        public string name;
     }
 
     public class RunePageInfo
@@ -289,5 +312,17 @@ namespace LoL_Generator
         public int id;
         public string name;
     }
-       
-}    
+
+    public class SummonerInfo
+    {
+        public string summonerId;
+    }
+
+    public class ItemSets
+    {
+        public long accountId;
+        public List<ItemSet> itemSets;
+        public long timestamp;
+    }
+
+}

@@ -43,7 +43,7 @@ namespace LoL_Generator
 
             HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
 
-            foreach (string path in Utility.Xpaths)
+            foreach (string path in RuneUtility.Xpaths)
             {
                 foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(path))
                 {
@@ -67,16 +67,18 @@ namespace LoL_Generator
             }
         }
 
-        static class Utility
+        
+    }
+
+    public class RuneUtility
+    {
+        public static List<string> Xpaths = new List<string>()
         {
-            public static List<string> Xpaths = new List<string>()
-            {
-                {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--mark']//img"},
-                {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--keystone perk-page__item--active']//img"},
-                {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item  perk-page__item--active']//img"},
-                {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--active']//img"},
-                {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//img[@class='active tip']"}
-            };
-        }
+            {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--mark']//img"},
+            {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--keystone perk-page__item--active']//img"},
+            {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item  perk-page__item--active']//img"},
+            {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//div[@class='perk-page__item perk-page__item--active']//img"},
+            {"//tbody[@class='tabItem ChampionKeystoneRune-1']//tr[1]//img[@class='active tip']"}
+        };
     }
 }
