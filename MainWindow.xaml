@@ -1,0 +1,36 @@
+﻿<Window x:Class="Lol_Generator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LoL Generator" Height="444.673" Width="269.672">
+    <Grid Height="397" Margin="0" Width="250" ShowGridLines="True">
+        <StackPanel>
+
+
+            <StackPanel Height="30" Orientation="Horizontal" Margin="0,5,0,0">
+                <Image x:Name="ReadyIcon" Height="15" Width="15" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="100,0,0,0" AutomationProperties.Name="StatusIcon"></Image>
+                <TextBox x:Name="ReadyText" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" AutomationProperties.Name="StatusText"/>
+            </StackPanel>
+
+            <TextBlock x:Name="ChampionText" HorizontalAlignment="Center" Margin="0,15,0,0"></TextBlock>
+            
+            <Image x:Name="ChampionIcon" Width="100" Height="100" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+
+            <StackPanel Height="30" Margin="0,30,0,0" Width="230" Orientation="Horizontal" VerticalAlignment="Top">
+                <Image Height="30" Width="30" Margin="8,0" Source="images/SummonerFlash.png" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Image Height="30" Width="30" Margin="8,0" RenderTransformOrigin="1.573,-0.183" Source="images/SummonerFlash.png" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox Height="30" Width="30" Margin="8,0" Text="or" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderThickness="0"/>
+                <Image Height="30" Width="30" Margin="8,0" RenderTransformOrigin="1.573,-0.183" Source="images/SummonerFlash.png" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Image Height="30" Width="30" Margin="8,0" RenderTransformOrigin="1.573,-0.183" Source="images/SummonerFlash.png" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </StackPanel >
+
+            <TextBlock Margin="0,30,0,0" HorizontalAlignment="Center">Click on a role to generate a loudout</TextBlock>
+            
+            <StackPanel Height="30" Margin="0,30,0,0">
+                <Button Height="30" Width="30" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="-4">
+                    <Image Source="images/Top_icon.png"></Image>
+                </Button>
+
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
