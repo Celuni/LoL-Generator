@@ -1,4 +1,4 @@
-League-Loadout-Generator (In Development)
+LoL Generator (In Development)
 =========================
 Description
 -------------------
