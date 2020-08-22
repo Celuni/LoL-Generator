@@ -1,0 +1,27 @@
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\MainWindow.g.cs
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\App.g.cs
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator_MarkupCompile.cache
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator_MarkupCompile.lref
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\MainWindow.baml
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\App.baml
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.exe
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.pdb
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\LoL Generator.exe.config
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\LoL Generator.exe
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\LoL Generator.pdb
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\Hardcodet.Wpf.TaskbarNotification.dll
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\HtmlAgilityPack.dll
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\Newtonsoft.Json.dll
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\Hardcodet.Wpf.TaskbarNotification.pdb
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\Hardcodet.Wpf.TaskbarNotification.xml
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\HtmlAgilityPack.pdb
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\HtmlAgilityPack.xml
+C:\Users\tavinc\source\repos\LoL Generator\bin\Debug\Newtonsoft.Json.xml
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\NotifyIconResources.baml
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.g.resources
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL_Generator.Properties.Resources.resources
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.GenerateResource.cache
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CoreCompileInputs.cache
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CopyComplete
+C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csprojAssemblyReference.cache
