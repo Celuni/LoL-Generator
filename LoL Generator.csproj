@@ -115,8 +115,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\Computers.ico" />
-    <Resource Include="images\offline.png" />
-    <Resource Include="images\online.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

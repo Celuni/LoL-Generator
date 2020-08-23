@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
-
+using System.Windows.Media;
 
 namespace LoL_Generator
 {
@@ -45,8 +45,6 @@ namespace LoL_Generator
 
         static CancellationTokenSource tokenSource;
 
-        public object FilenameUtils { get; private set; }
-
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -60,6 +58,7 @@ namespace LoL_Generator
             tokenSource = new CancellationTokenSource();
             StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
 
+            window.LoadoutButton.Click += new RoutedEventHandler(GenerateLoadout);
             Console.WriteLine("Waiting for LeagueClient.exe to start...");
         }
 
@@ -73,12 +72,18 @@ namespace LoL_Generator
         {
             if (Process.GetProcessesByName("LeagueClient").FirstOrDefault() == null)
             {
+                Action act = () =>
+                {
+                    if (window.ChampionOverlay.Visibility == Visibility.Visible)
+                    {
+                        window.ChampionOverlay.Visibility = Visibility.Collapsed;
+                        window.WaitingOverlay.Visibility = Visibility.Visible;
+                    }
+                };
+
                 Console.WriteLine("LeagueClient.exe has stopped.");
                 tokenSource.Cancel();
-
-                Action act = () => { window.ReadyText.Text = "Not Ready"; window.ReadyIcon.Source = new BitmapImage(new Uri(@"/images/offline.png", UriKind.Relative)); };
-                window.Dispatcher.Invoke(act);
-
+                              
                 tokenSource = new CancellationTokenSource();
                 StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
 
@@ -113,13 +118,6 @@ namespace LoL_Generator
                 {
                     Console.WriteLine("lockfile has been created");
                     tokenSource.Cancel();
-
-                    Action act = () => { 
-                        window.ReadyText.Text = "Ready"; 
-                        window.ReadyIcon.Source = new BitmapImage(new Uri(@"/images/online.png", UriKind.Relative)); 
-                    };
-
-                    window.Dispatcher.Invoke(act);
 
                     string lockfile = "";
                     using (FileStream fs = File.Open(lockfileloc, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -178,7 +176,7 @@ namespace LoL_Generator
 
                         HtmlDocument htmlDoc = default;
                         string championLockId = default;
-                        Dictionary<string, bool> rolesActive = default;
+                        string primaryrole = default;
                         if (championHoverId != 0)
                         {
                             string championJson = await SendRequestAsync("GET", $"http://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champions/{championHoverId}.json", null);
@@ -191,44 +189,33 @@ namespace LoL_Generator
 
                                 htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/");
 
-                                string xpath = "//table[@class='champion-overview__table champion-overview__table--summonerspell']//img[contains(@src, 'Summoner')]";
-                                List<string> summonerImages = new List<string>();
-                                Console.WriteLine(champion);
-                                foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
-                                {
-                                    summonerImages.Add("https:" + node.GetAttributeValue("src", "nothing"));
-                                }
+                                string xpath = $"//ul[@class='champion-stats-position']//li";
 
-                                xpath = $"//ul[@class='champion-stats-position']//li";
-                                rolesActive = new Dictionary<string, bool>() { { "top", false }, { "jungle", false }, { "mid", false }, { "adc", false }, { "support", false } };
-
-                                foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
+                                window.Dispatcher.Invoke(new Action(() => window.RolesGrid.Children.Clear()));
+                                HtmlNodeCollection roles = htmlDoc.DocumentNode.SelectNodes(xpath);
+                                
+                                foreach (HtmlNode node in roles)
                                 {
                                     string role = node.GetAttributeValue("data-position", "nothing").ToLower();
 
-                                    rolesActive[role] = true;
+                                    if (roles.IndexOf(node) == 0)
+                                    {
+                                        primaryrole = role;
+                                    }
+
+                                    AddRoleButton(role, roles.IndexOf(node) == 0);
                                 }
 
-                                Action act = () => {
-                                window.ChampionText.Text = championJsonObject.name;
+                                DisplaySummoners(htmlDoc);
 
+                                Action act = () => {
                                 window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
                                 
-                                window.Summoner1Image.Source = new BitmapImage(new Uri(summonerImages[0], UriKind.Absolute));
-                                window.Summoner2Image.Source = new BitmapImage(new Uri(summonerImages[1], UriKind.Absolute));
-                                window.Summoner3Image.Source = new BitmapImage(new Uri(summonerImages[2], UriKind.Absolute));
-                                window.Summoner4Image.Source = new BitmapImage(new Uri(summonerImages[3], UriKind.Absolute));
-
-                                window.TopButton.IsHitTestVisible = rolesActive["top"];
-                                window.TopImage.Opacity = (rolesActive["top"]) ? 1 : 0.25;
-                                window.JungleButton.IsHitTestVisible = rolesActive["jungle"];
-                                window.JungleImage.Opacity = (rolesActive["jungle"]) ? 1 : 0.25;
-                                window.MidButton.IsHitTestVisible = rolesActive["mid"];
-                                window.MidImage.Opacity = (rolesActive["mid"]) ? 1 : 0.25;
-                                window.BotButton.IsHitTestVisible = rolesActive["adc"];
-                                window.BotImage.Opacity = (rolesActive["adc"]) ? 1 : 0.25;
-                                window.SupportButton.IsHitTestVisible = rolesActive["support"];
-                                window.SupportImage.Opacity = (rolesActive["support"]) ? 1 : 0.25;
+                                if (window.WaitingOverlay.Visibility == Visibility.Visible)
+                                {
+                                    window.WaitingOverlay.Visibility = Visibility.Collapsed;
+                                    window.ChampionOverlay.Visibility = Visibility.Visible;
+                                }
                                 };
                                 window.Dispatcher.Invoke(act);
 
@@ -238,57 +225,48 @@ namespace LoL_Generator
 
                         if (championLockId != "0" && championLockId != default && !champLocked)
                         {
-                            Console.WriteLine("A Champion has been locked in, generating rune page(s) and item set(s)...");
+                            Action act = () =>
+                            {
+                                window.WaitingOverlay.Visibility = Visibility.Visible;
+                                window.ChampionOverlay.Visibility = Visibility.Collapsed;
+                            };
+                            window.Dispatcher.Invoke(act);
+
                             champLocked = true;
                                                       
                             string runePagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-perks/v1/pages", null);
                             List<RunePageInfo> runePageObject = JsonConvert.DeserializeObject<List<RunePageInfo>>(runePagesJson);
 
-                            foreach(string role in rolesActive.Where(x => x.Value == true).Select(x => x.Key))
+                            RunePage runePage = new RunePage(champion, primaryrole);
+
+                            string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
+
+                            if (runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primaryrole.ToLower())) != null)
                             {
-                                RunePage runePage = new RunePage(champion, role);
+                                Console.WriteLine("Modifying rune page for " + champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primaryrole.ToLower()));
 
-                                string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
+                                int id = runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primaryrole.ToLower())).id;
 
-                                if (runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())) != null)
-                                {
-                                    Console.WriteLine("Modifying rune page for " + champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()));
-
-                                    int id = runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())).id;
-
-                                    await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
-                                }
-                                else
-                                {
-                                    await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
-                                }
+                                await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
                             }
-
-                            /*foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
+                            else
                             {
-                                string role = node.GetAttributeValue("data-position", "nothing");
-
-                                RunePage runePage = new RunePage(champion, role);
-
-                                string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
-
-                                if (runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())) != null)
-                                {
-                                    Console.WriteLine("Modifying rune page for " + champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()));
-
-                                    int id = runePageObject.FirstOrDefault(x => x.name == champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower())).id;
-
-                                    await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
-                                }
-                                else
-                                {
-                                    await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
-                                }
-                            }*/
+                                await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
+                            }
                         }
                     }
                     if (gamephase != "\"ChampSelect\"")
                     {
+                        Action act = () =>
+                        {
+                            if (window.ChampionOverlay.Visibility == Visibility.Visible)
+                            {
+                                window.ChampionOverlay.Visibility = Visibility.Collapsed;
+                                window.WaitingOverlay.Visibility = Visibility.Visible;
+                            }
+                        };
+                        window.Dispatcher.Invoke(act);
+
                         Console.WriteLine("Waiting for champion select to start/restart...");
 
                         champLocked = false;
@@ -300,8 +278,105 @@ namespace LoL_Generator
                 }
             }
         }
+        
+        void DisplaySummoners(HtmlDocument htmlDoc)
+        {
+            string xpath = "//table[@class='champion-overview__table champion-overview__table--summonerspell']//img[contains(@src, 'Summoner')]";
+            List<string> summonerImages = new List<string>();
 
-        static async Task<string> SendRequestAsync(string method, string url, string json)
+            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(xpath))
+            {
+                summonerImages.Add("https:" + node.GetAttributeValue("src", "nothing"));
+            }
+            Action act = () =>
+            {
+                window.Summoner1Image.Source = new BitmapImage(new Uri(summonerImages[0], UriKind.Absolute));
+                window.Summoner2Image.Source = new BitmapImage(new Uri(summonerImages[1], UriKind.Absolute));
+                window.Summoner3Image.Source = new BitmapImage(new Uri(summonerImages[2], UriKind.Absolute));
+                window.Summoner4Image.Source = new BitmapImage(new Uri(summonerImages[3], UriKind.Absolute));
+            };
+            window.Dispatcher.Invoke(act);
+        }
+
+        void SelectRole(object sender, RoutedEventArgs e)
+        {
+            Button currbutton = sender as Button;
+
+            foreach (UIElement children in window.RolesGrid.Children)
+            {
+                Button button = children as Button;
+                Image image = button.Content as Image;
+
+                if (button != currbutton)
+                {
+                    window.Dispatcher.Invoke(new Action(() => image.Opacity = 0.25));
+                }
+                else
+                {
+                    window.Dispatcher.Invoke(new Action(() => image.Opacity = 1));
+                }
+            }
+
+            DisplaySummoners(new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{currbutton.Name}"));
+        }
+
+        void AddRoleButton(string role, bool primary)
+        {
+            Current.Dispatcher.Invoke(delegate
+            {
+                string image = default;
+
+                switch (role)
+                {
+                    case "top":
+                        image = "https://ultimate-bravery.net/images/roles/top_icon.png";
+
+                        break;
+                    case "jungle":
+                        image = "https://ultimate-bravery.net/images/roles/jungle_icon.png";
+
+                        break;
+                    case "mid":
+                        image = "https://ultimate-bravery.net/images/roles/mid_icon.png";
+
+                        break;
+                    case "adc":
+                        image = "https://ultimate-bravery.net/images/roles/bot_icon.png";
+
+                        break;
+                    case "support":
+                        image = "https://ultimate-bravery.net/images/roles/support_icon.png";
+
+                        break;
+                }
+
+                Button newBtn = new Button()
+                {
+                    Name = role,
+                    Content = new Image
+                    {
+                        Source = new BitmapImage(new Uri(image)),
+                        Opacity = (primary) ? 1 : 0.25
+                    },
+                    Height = 30,
+                    Width = 30,
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    BorderThickness = new Thickness(1),
+                    Padding = new Thickness(-4)
+                };
+                newBtn.Click += new RoutedEventHandler(SelectRole);
+
+                window.RolesGrid.Children.Add(newBtn);
+            });
+        }
+
+        void GenerateLoadout(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine(LoL_Generator.Properties.Settings.Default.runePageID);
+        }
+
+        async Task<string> SendRequestAsync(string method, string url, string json)
         {
             using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
             {
@@ -324,8 +399,8 @@ namespace LoL_Generator
 
             return null;
         }
-
-        public static void StartNewTask(Action action, TimeSpan pollInterval, CancellationToken token, TaskCreationOptions taskCreationOptions = TaskCreationOptions.None)
+              
+        static void StartNewTask(Action action, TimeSpan pollInterval, CancellationToken token, TaskCreationOptions taskCreationOptions = TaskCreationOptions.None)
         {
             Task.Factory.StartNew(
                 () =>
