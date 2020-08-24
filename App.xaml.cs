@@ -37,8 +37,12 @@ namespace LoL_Generator
 
         static long summonerId;
 
-        static bool champLocked;
+        static bool listedSets;
         static string champion;
+        static bool champLocked;
+
+        static int championHoverId;
+        static string currole;
 
         static HttpClient httpClient;
         static HttpClientHandler handler;
@@ -55,11 +59,15 @@ namespace LoL_Generator
             //create the notifyicon (it's a resource declared in NotifyIconResources.xaml
             notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
 
+            window.DefaultRunePage.Tag = LoL_Generator.Properties.Settings.Default.runePageID.DefaultIfEmpty();
+            window.DefaultItemPage.Tag = LoL_Generator.Properties.Settings.Default.itemSetID;
+            window.LoadoutButton.Click += new RoutedEventHandler(GenerateLoadout);
+
+            Console.WriteLine(string.IsNullOrEmpty(LoL_Generator.Properties.Settings.Default.runePageID));
+            Console.WriteLine(LoL_Generator.Properties.Settings.Default.runePageID == null);
+
             tokenSource = new CancellationTokenSource();
             StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
-
-            window.LoadoutButton.Click += new RoutedEventHandler(GenerateLoadout);
-            Console.WriteLine("Waiting for LeagueClient.exe to start...");
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -72,6 +80,8 @@ namespace LoL_Generator
         {
             if (Process.GetProcessesByName("LeagueClient").FirstOrDefault() == null)
             {
+                tokenSource.Cancel();
+
                 Action act = () =>
                 {
                     if (window.ChampionOverlay.Visibility == Visibility.Visible)
@@ -81,9 +91,10 @@ namespace LoL_Generator
                     }
                 };
 
-                Console.WriteLine("LeagueClient.exe has stopped.");
-                tokenSource.Cancel();
-                              
+                listedSets = false;
+                champion = default;
+                champLocked = false;
+
                 tokenSource = new CancellationTokenSource();
                 StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
 
@@ -167,12 +178,47 @@ namespace LoL_Generator
 
                     if (gamephase == "\"ChampSelect\"" && !champLocked)
                     {
-                        //Console.WriteLine("In Champion Select");
+                        if (!listedSets)
+                        {
+                            string runePagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-perks/v1/pages", null);
+                            List<RunePageInfo> runePageObject = JsonConvert.DeserializeObject<List<RunePageInfo>>(runePagesJson);
+
+                            string itemPagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-item-sets/v1/item-sets/{summonerId}/sets", null);
+                            ItemSets itemPagesObject = JsonConvert.DeserializeObject<ItemSets>(itemPagesJson);
+
+                            Action act = () => {
+                                ComboBoxItem defaultRunePage = (ComboBoxItem)window.RuneMenu.FindName("DefaultRunePage");
+                                window.RuneMenu.Items.Clear();
+                                window.RuneMenu.Items.Add(defaultRunePage);
+                                window.RuneMenu.SelectedItem = defaultRunePage;
+
+                                foreach (RunePageInfo runePage in runePageObject)
+                                {
+                                    if (runePage.isDeletable)
+                                    {
+                                        window.RuneMenu.Items.Add(new ComboBoxItem() { Content = runePage.name, Tag = runePage.id.ToString() });
+                                    }
+                                }
+                                                                
+                                ComboBoxItem defaultItemPage = (ComboBoxItem)window.ItemMenu.FindName("DefaultItemPage");
+                                window.ItemMenu.Items.Clear();
+                                window.ItemMenu.Items.Add(defaultItemPage);
+                                window.ItemMenu.SelectedItem = defaultItemPage;
+
+                                foreach (ItemSet itemPage in itemPagesObject.itemSets)
+                                {
+                                    window.ItemMenu.Items.Add(new ComboBoxItem() { Content = itemPage.title, Tag = itemPage.uid });
+                                }
+                            };
+                            window.Dispatcher.Invoke(act);
+
+                            listedSets = true;
+                        }
 
                         string championHoverJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-champ-select/v1/session", null);
                         ChampionHoverInfo championHoverObject = JsonConvert.DeserializeObject<ChampionHoverInfo>(championHoverJson);
 
-                        int championHoverId = championHoverObject.myTeam.FirstOrDefault(x => x.summonerId == summonerId).championId;
+                        championHoverId = championHoverObject.myTeam.FirstOrDefault(x => x.summonerId == summonerId).championId;
 
                         HtmlDocument htmlDoc = default;
                         string championLockId = default;
@@ -201,6 +247,7 @@ namespace LoL_Generator
                                     if (roles.IndexOf(node) == 0)
                                     {
                                         primaryrole = role;
+                                        currole = role;
                                     }
 
                                     AddRoleButton(role, roles.IndexOf(node) == 0);
@@ -209,13 +256,13 @@ namespace LoL_Generator
                                 DisplaySummoners(htmlDoc);
 
                                 Action act = () => {
-                                window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
+                                    window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
                                 
-                                if (window.WaitingOverlay.Visibility == Visibility.Visible)
-                                {
-                                    window.WaitingOverlay.Visibility = Visibility.Collapsed;
-                                    window.ChampionOverlay.Visibility = Visibility.Visible;
-                                }
+                                    if (window.WaitingOverlay.Visibility == Visibility.Visible)
+                                    {
+                                        window.WaitingOverlay.Visibility = Visibility.Collapsed;
+                                        window.ChampionOverlay.Visibility = Visibility.Visible;
+                                    }
                                 };
                                 window.Dispatcher.Invoke(act);
 
@@ -267,8 +314,8 @@ namespace LoL_Generator
                         };
                         window.Dispatcher.Invoke(act);
 
-                        Console.WriteLine("Waiting for champion select to start/restart...");
-
+                        listedSets = false;
+                        champion = default;
                         champLocked = false;
                     }
                 }
@@ -314,6 +361,7 @@ namespace LoL_Generator
                 else
                 {
                     window.Dispatcher.Invoke(new Action(() => image.Opacity = 1));
+                    currole = button.Name;
                 }
             }
 
@@ -371,9 +419,74 @@ namespace LoL_Generator
             });
         }
 
+        async void GenerateRunePage(string champion, string role, string id)
+        {
+            RunePage runePage = new RunePage(champion, role);
+
+            if ((string)((ComboBoxItem)window.RuneMenu.SelectedItem).Content != "Default")
+            {
+                ((ComboBoxItem)window.RuneMenu.SelectedItem).Content = runePage.name;
+            }
+            else
+            {
+                runePage.name += " (Default)";
+            }
+
+            string runeJson = JsonConvert.SerializeObject(runePage, Formatting.Indented);
+
+            if (id == default)
+            {
+                await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
+
+                string currentRunePageJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-perks/v1/currentpage", null);
+                RunePageInfo currentRunePageObject = JsonConvert.DeserializeObject<RunePageInfo>(currentRunePageJson);
+
+                LoL_Generator.Properties.Settings.Default.runePageID = currentRunePageObject.id.ToString();
+                LoL_Generator.Properties.Settings.Default.Save();
+                ((ComboBoxItem)window.RuneMenu.SelectedItem).Tag = currentRunePageObject.id.ToString();
+            }
+            else
+            {
+                await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
+            }
+        }
+
+        async void GenerateItemPage(string champion, string role, string uid)
+        {
+            ItemSet itemSet = new ItemSet(champion, role, championHoverId);
+
+            if ((string)((ComboBoxItem)window.ItemMenu.SelectedItem).Content != "Default")
+            {
+                ((ComboBoxItem)window.ItemMenu.SelectedItem).Content = itemSet.title;
+            }
+            else
+            {
+                itemSet.title += " (Default)";
+            }
+
+            string itemPagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-item-sets/v1/item-sets/{summonerId}/sets", null);
+            ItemSets itemPagesObject = JsonConvert.DeserializeObject<ItemSets>(itemPagesJson);
+
+            if (uid == default)
+            {
+                itemPagesObject.itemSets.Add(new ItemSet(champion, role, championHoverId));
+            }
+            else
+            {
+                int index = itemPagesObject.itemSets.FindIndex(x => x.uid == uid);
+                itemPagesObject.itemSets[index] = itemSet;
+            }
+
+            string itemsetsJson = JsonConvert.SerializeObject(itemPagesObject, Formatting.Indented);
+
+            await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-item-sets/v1/item-sets/{summonerId}/sets", itemsetsJson);
+        }
+
         void GenerateLoadout(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine(LoL_Generator.Properties.Settings.Default.runePageID);
+            Console.WriteLine(((ComboBoxItem)window.RuneMenu.SelectedItem).Tag == null);
+            GenerateRunePage(champion, currole, (string)((ComboBoxItem)window.RuneMenu.SelectedItem).Tag);
+            //GenerateItemPage(champion, currole, (string)((ComboBoxItem)window.ItemMenu.SelectedItem).Tag);
         }
 
         async Task<string> SendRequestAsync(string method, string url, string json)
@@ -485,14 +598,13 @@ namespace LoL_Generator
     {
         public int id;
         public string name;
+        public bool isDeletable;
     }
-
 
     public class ItemSets
     {
         public long accountId;
         public List<ItemSet> itemSets;
-        public long timestamp;
     }
 
 }

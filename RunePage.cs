@@ -10,25 +10,7 @@ namespace LoL_Generator
 {
     class RunePage
     {
-        public List<int> autoModifiedSelections;
-
-        public bool current;
-
-        public int id;
-
-        public bool isActive;
-
-        public bool isDeletable;
-
-        public bool isEditable;
-
-        public bool isValid;
-
-        public long lastModified;
-
         public string name;
-
-        public int order;
 
         public int primaryStyleId;
 
@@ -38,7 +20,7 @@ namespace LoL_Generator
 
         public RunePage(string champion, string role)
         {
-            name = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower());
+            name = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
             selectedPerkIds = new List<int>();
 
             HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
@@ -66,8 +48,6 @@ namespace LoL_Generator
                 }
             }
         }
-
-        
     }
 
     public class RuneUtility

@@ -37,7 +37,7 @@ namespace LoL_Generator
             associatedChampions = new List<int>() { id };
 
             blocks = new List<Block>();
-            title = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower());
+            title = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
 
             ItemUtility.allItemIds = new List<string>();
 
