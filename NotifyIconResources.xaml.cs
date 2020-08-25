@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+//file is WIP, this file contains logic to handle opening, closing and hiding of the window from the tray
 namespace LoL_Generator
 {
     /// <summary>
