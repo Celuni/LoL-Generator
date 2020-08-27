@@ -27,11 +27,21 @@ namespace LoL_Generator
             {
                 return new DelegateCommand
                 {
-                    CanExecuteFunc = () => Application.Current.MainWindow == null,
-                    CommandAction = () =>
-                    {
-                        Application.Current.MainWindow = new MainWindow();
-                        Application.Current.MainWindow.Show();
+                    CanExecuteFunc = () => App.window.Visibility == Visibility.Hidden || App.window.WindowState == WindowState.Minimized,
+                    CommandAction = () => {
+                        if (App.window.Visibility == Visibility.Hidden)
+                        {
+                            App.window.Show();
+                        }
+
+                        if (App.window.WindowState == WindowState.Minimized)
+                        {
+                            App.window.WindowState = WindowState.Normal;
+                        }
+
+                        App.window.Activate();
+                        App.window.Topmost = true;
+                        App.window.Topmost = false;
                     }
                 };
             }
@@ -46,12 +56,11 @@ namespace LoL_Generator
             {
                 return new DelegateCommand
                 {
-                    CommandAction = () => Application.Current.MainWindow.Close(),
-                    CanExecuteFunc = () => Application.Current.MainWindow != null
+                    CanExecuteFunc = () => App.window.Visibility == Visibility.Visible,
+                    CommandAction = () => App.window.Hide()
                 };
             }
         }
-
 
         /// <summary>
         /// Shuts down the application.
@@ -60,7 +69,10 @@ namespace LoL_Generator
         {
             get
             {
-                return new DelegateCommand { CommandAction = () => Application.Current.Shutdown() };
+                return new DelegateCommand 
+                { 
+                    CommandAction = () => Application.Current.Shutdown()
+                };
             }
         }
     }

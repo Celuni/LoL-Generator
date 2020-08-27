@@ -21,13 +21,16 @@ namespace LoL_Generator
 
         public RunePage(string champion, string role)
         {
-            //convert format of name to a traditionally formatted name (e.g. ThisISaNaMe -> Thisisaname) and specify it was created by this program
-            name = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
-            //initiate the list of runes
-            selectedPerkIds = new List<int>();
-
             //load the statistics page from op.gg of the champion and the role
             HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
+
+            string xpath = "//h1[@class='champion-stats-header-info__name']";
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(xpath);
+
+            name = nodes[0].InnerText + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
+
+            //initiate the list of runes
+            selectedPerkIds = new List<int>();
 
             //go through each XPath query
             foreach (string path in RuneUtility.Xpaths)

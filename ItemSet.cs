@@ -40,17 +40,23 @@ namespace LoL_Generator
 
             //initiate a list which will contain each block (category) of an item set
             blocks = new List<Block>();
-            //convert format of name to a traditionally formatted name (e.g. ThisISaNaMe -> Thisisaname) and specify it was created by this program
-            title = champion + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
+
+            //load the statistics page from op.gg of the champion and the role
+            HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
+
+            string xpath = "//h1[@class='champion-stats-header-info__name']";
+            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(xpath);
+
+            title = nodes[0].InnerText + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
 
             //initiate a list which will contain the ids of all items added, this list is used to make sure no duplicate items are added
             ItemUtility.allItemIds = new List<string>();
 
             //add each block of items
-            blocks.Add(new Block(name: "Consumables", champion: champion, role: role));
-            blocks.Add(new Block(name: "Starters", champion: champion, role: role));
-            blocks.Add(new Block(name: "Core Build", champion: champion, role: role));
-            blocks.Add(new Block(name: "Other Items", champion: champion, role: role));
+            blocks.Add(new Block("Consumables", champion, role, htmlDoc));
+            blocks.Add(new Block("Starters", champion, role, htmlDoc));
+            blocks.Add(new Block("Core Build", champion, role, htmlDoc));
+            blocks.Add(new Block("Other Items", champion, role, htmlDoc));
         }
 
         //tell the Json object constructor to use this empty constructor as the one above requires parameters
@@ -68,14 +74,11 @@ namespace LoL_Generator
 
         public string type;
                
-        public Block(string name, string champion, string role)
+        public Block(string name, string champion, string role, HtmlDocument htmlDoc)
         {
             //initiate list to hold items for this block
             items = new List<Item>();
             type = name;
-
-            //load the statistics page from op.gg of the champion and the role
-            HtmlDocument htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/{role}");
 
             //this part is where XPath queries are getting parsed to get the items
             //it does require a decent understanding of League of Legends so feel free to skip if you are not familar with the game

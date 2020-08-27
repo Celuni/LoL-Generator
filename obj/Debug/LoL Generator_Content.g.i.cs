@@ -8,11 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/aatrox.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/computers.ico")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/offline.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/online.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/summonerflash.png")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/top_icon.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("images/568253.ico")]
 
 

@@ -1,7 +1,13 @@
 ﻿<Window  xmlns="http://schemas.microsoft.com/netfx/2007/xaml/presentation" x:Class="LoL_Generator.MainWindow"
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoL Generator" Height="444.673" Width="269.672" >
+        xmlns:p="clr-namespace:LoL_Generator.Properties"
+        Title="LoL Generator" Height="444.673" Width="269.672" 
+         
+        Left="{Binding Source={x:Static p:Settings.Default}, Path=Left, Mode=TwoWay}"
+        Top="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}" 
+        ResizeMode="CanMinimize"
+         >
     <Window.Background>
         <ImageBrush ImageSource="https://lol.gamebuddy.gg/assets/images/summoners-rift-background.jpg"/>
     </Window.Background>
