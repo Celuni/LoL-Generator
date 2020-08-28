@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace LoL_Generator
 {
@@ -26,8 +27,8 @@ namespace LoL_Generator
 
             string xpath = "//h1[@class='champion-stats-header-info__name']";
             HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(xpath);
-
-            name = nodes[0].InnerText + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
+            
+            name = HttpUtility.HtmlDecode(nodes[0].InnerText) + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
 
             //initiate the list of runes
             selectedPerkIds = new List<int>();

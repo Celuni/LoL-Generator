@@ -3,52 +3,71 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:p="clr-namespace:LoL_Generator.Properties"
         Title="LoL Generator" Height="444.673" Width="269.672" 
-         
+
         Left="{Binding Source={x:Static p:Settings.Default}, Path=Left, Mode=TwoWay}"
         Top="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}" 
-        ResizeMode="CanMinimize"
-         >
-    <Window.Background>
-        <ImageBrush ImageSource="https://lol.gamebuddy.gg/assets/images/summoners-rift-background.jpg"/>
-    </Window.Background>
+        ResizeMode="CanMinimize" WindowStyle="None"
+        AllowsTransparency="True"
+         Background="Transparent">
+    
+    <Border BorderBrush="#FF000000" BorderThickness="1" CornerRadius="20">
+        <Border.Background>
+            <ImageBrush ImageSource="https://lol.gamebuddy.gg/assets/images/summoners-rift-background.jpg"/>
+        </Border.Background>
 
-    <Grid Height="397" Margin="0" Width="250">
-        <StackPanel x:Name= "WaitingOverlay" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock HorizontalAlignment="Center"  VerticalAlignment="Center" Text="Waiting for a champion to be picked..."></TextBlock>
-        </StackPanel>
-        
-        <StackPanel x:Name="ChampionOverlay" Grid.ColumnSpan="2" Visibility="Collapsed">
+        <Grid>
+            <Grid Height="30" Background="Transparent" VerticalAlignment="Top" MouseDown="moveWindow">
+                <Button HorizontalAlignment="Right" Width="30" Height="30" VerticalAlignment="Top" Background="Transparent" BorderBrush="{x:Null}" Click="closeWindow">
+                    <Image Source="https://cdn2.iconfinder.com/data/icons/flat-icons-web/40/Remove-512.png"></Image>
+                </Button>
 
-            <Image x:Name="ChampionIcon" Width="100" Height="100" Margin="0,10,0,0"/>
+                <Button HorizontalAlignment="Right" Width="20" Height="25" VerticalAlignment="Top" Background="Transparent" BorderBrush="{x:Null}" Margin="0,0,27,0" Click="minimizeWindow">
+                    <Image Source="https://cdn0.iconfinder.com/data/icons/ui-16px-perfect-megapack-line/16/113_minimize-256.png">
+                    </Image>
+                </Button>
+            </Grid>
+            
+            <StackPanel x:Name= "WaitingOverlay" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center"  VerticalAlignment="Center" Text="Waiting for a champion to be picked..."></TextBlock>
+            </StackPanel>
 
-            <TextBlock Margin="0,15,0,0" HorizontalAlignment="Center">Summoners</TextBlock>
-            <UniformGrid Columns="5" Rows="1" Height="30" Margin="0,10,0,0" Width="230"  HorizontalAlignment="Center">
-                <Image x:Name="Summoner1Image" Height="30" Width="30" />
-                <Image x:Name="Summoner2Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183" />
-                <TextBox Height="30" Width="30" Background="Transparent" Text="or" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderThickness="0"/>
-                <Image x:Name="Summoner3Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183" />
-                <Image x:Name="Summoner4Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183"   />
-            </UniformGrid >
+            <StackPanel x:Name="ChampionOverlay" Grid.ColumnSpan="2" Visibility="Collapsed">
 
-            <TextBlock Margin="0,15,0,0" HorizontalAlignment="Center">Select a role</TextBlock>
+                <Image x:Name="ChampionIcon" Width="100" Height="100" Margin="0,60,0,0"/>
 
-            <UniformGrid x:Name="RolesGrid" Rows="1"  Height="30" Width="230" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+                <TextBlock Margin="0,15,0,0" HorizontalAlignment="Center">Summoners</TextBlock>
+                <UniformGrid Columns="5" Rows="1" Height="30" Margin="0,10,0,0" Width="230"  HorizontalAlignment="Center">
+                    <Image x:Name="Summoner1Image" Height="30" Width="30" />
+                    <Image x:Name="Summoner2Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183" />
+                    <TextBox Height="30" Width="30" Background="Transparent" Text="or" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderThickness="0"/>
+                    <Image x:Name="Summoner3Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183" />
+                    <Image x:Name="Summoner4Image" Height="30" Width="30"  RenderTransformOrigin="1.573,-0.183"   />
+                </UniformGrid >
 
-            <UniformGrid Rows = "1" Columns= "2" Height="30" Width="230" Margin="0,5,0,0">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom">Overwrite Rune Page</TextBlock>
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom">Overwrite Item Set</TextBlock>
-            </UniformGrid>
+                <TextBlock Margin="0,15,0,0" HorizontalAlignment="Center">Select a role</TextBlock>
 
-            <UniformGrid Rows = "1" Columns= "2" Height="30" Width="230" Margin="0,5,0,0">
-                <ComboBox x:Name="RuneMenu" VerticalContentAlignment="Center">
-                    <ComboBoxItem x:Name="DefaultRunePage" IsSelected="True" >Default</ComboBoxItem>
-                </ComboBox>
-                <ComboBox x:Name="ItemMenu" VerticalContentAlignment="Center">
-                    <ComboBoxItem x:Name="DefaultItemPage" IsSelected="True" >Default</ComboBoxItem>
-                </ComboBox>
-            </UniformGrid>
-            <Button x:Name="LoadoutButton" Height="30" Width="230" Content="Generate Loadout" Margin="0,5,0,0"></Button>
+                <UniformGrid x:Name="RolesGrid" Rows="1"  Height="30" Width="230" Margin="0,10,0,0" HorizontalAlignment="Center"/>
 
-        </StackPanel>
-    </Grid>
+                <UniformGrid Rows = "1" Columns= "2" Height="30" Width="230" Margin="0,5,0,0">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom">Overwrite Rune Page</TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom">Overwrite Item Set</TextBlock>
+                </UniformGrid>
+
+                <UniformGrid Rows = "1" Columns= "2" Height="30" Width="230" Margin="0,5,0,0">
+                    <ComboBox x:Name="RuneMenu" VerticalContentAlignment="Center">
+                        <ComboBoxItem x:Name="DefaultRunePage" IsSelected="True" >Default</ComboBoxItem>
+                    </ComboBox>
+                    <ComboBox x:Name="ItemMenu" VerticalContentAlignment="Center">
+                        <ComboBoxItem x:Name="DefaultItemPage" IsSelected="True" >Default</ComboBoxItem>
+                    </ComboBox>
+                </UniformGrid>
+                <Button x:Name="LoadoutButton" Height="30" Width="230" Content="Generate Loadout" Margin="0,5,0,0"></Button>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+
+    
+
+    
 </Window>

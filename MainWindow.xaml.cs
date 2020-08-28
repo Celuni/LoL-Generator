@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 
 namespace LoL_Generator
 {
@@ -23,5 +24,21 @@ namespace LoL_Generator
 
             Hide();
         }
+
+        private void moveWindow(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
+        }
+
+        private void closeWindow(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void minimizeWindow(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
     }
 }

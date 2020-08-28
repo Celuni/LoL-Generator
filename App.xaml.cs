@@ -85,11 +85,6 @@ namespace LoL_Generator
             base.OnExit(e);
         }
 
-        void App_Closing(object sender, ConsoleCancelEventArgs e)
-        {
-
-        }
-
         //checks for the league client
         bool CheckClientIsOpen()
         {
@@ -131,7 +126,6 @@ namespace LoL_Generator
             //check if league client is open
             if (Process.GetProcessesByName("LeagueClient").FirstOrDefault() != null)
             {
-                Console.WriteLine("LeagueClient.exe has been opened");
                 //cancel the current task
                 tokenSource.Cancel();
 
@@ -155,7 +149,6 @@ namespace LoL_Generator
                 //check if lockfile has been generated
                 if (File.Exists(lockfileloc))
                 {
-                    Console.WriteLine("lockfile has been created");
                     tokenSource.Cancel();
 
                     //open and read the lockfile
@@ -278,12 +271,17 @@ namespace LoL_Generator
                             ChampionInfo championJsonObject = JsonConvert.DeserializeObject<ChampionInfo>(championJson);
 
                             Regex regex = new Regex(@"[^A-Za-z0-9]+");
-                                                      
+
                             //check if the champion hovered has changed
-                            if (champion == default || champion != regex.Replace(championJsonObject.name, ""))
+                            if (champion == default || (championJsonObject.name != "Nunu & Willump" && champion != regex.Replace(championJsonObject.name, "")) || (championJsonObject.name == "Nunu & Willump" && champion != "nunu"))
                             {
                                 //assign the champion variable to the current champion
                                 champion = regex.Replace(championJsonObject.name, "");
+
+                                if (championJsonObject.name == "Nunu & Willump")
+                                {
+                                    champion = "nunu";
+                                }
 
                                 //load the statistics page from op.gg of the champion selected
                                 htmlDoc = new HtmlWeb().Load($"https://na.op.gg/champion/{champion}/statistics/");

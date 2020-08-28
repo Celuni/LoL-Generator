@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace LoL_Generator
 {
@@ -47,7 +48,7 @@ namespace LoL_Generator
             string xpath = "//h1[@class='champion-stats-header-info__name']";
             HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(xpath);
 
-            title = nodes[0].InnerText + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
+            title = HttpUtility.HtmlDecode(nodes[0].InnerText) + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.ToLower()) + " (LoL Gen)";
 
             //initiate a list which will contain the ids of all items added, this list is used to make sure no duplicate items are added
             ItemUtility.allItemIds = new List<string>();
@@ -81,7 +82,6 @@ namespace LoL_Generator
             type = name;
 
             //this part is where XPath queries are getting parsed to get the items
-            //it does require a decent understanding of League of Legends so feel free to skip if you are not familar with the game
             switch (type)
             {
                 //this is the first block in an item list, it contains the skill order upgrade and all consumables and starting items
@@ -118,9 +118,6 @@ namespace LoL_Generator
                     //add all consumble items and starting items e.g. Corrupting Potion, Long Sword etc.
                     AddItemIds(new List<string>() { "2003", "2031", "2033", "2055", "3364", "3363", "2138", "2140", "2139" });
 
-                    //the first item is a health potion which gets added twice so set it to only one
-                    items[0].count = 1;
-
                     break;
                 //this is the second block in an item list, it contains the the starting items for the champion and role
                 case "Starters":
@@ -133,6 +130,8 @@ namespace LoL_Generator
                     ward.count = 1;
 
                     items.Add(ward);
+
+                    AddItemIds(GetItemIds(htmlDoc, "AltStarters").Reverse<string>());
 
                     break;
 
@@ -165,29 +164,41 @@ namespace LoL_Generator
         {
             //list to hold item ids
             List<String> itemIds = new List<String>();
+            HtmlNodeCollection nodes = default;
 
-            //parse through each result found through the XPath query
-            foreach (HtmlNode node in htmlDoc.DocumentNode.SelectNodes(ItemUtility.Xpaths[itemtype]))
+            try
             {
-                //parse each id from the image source using regex
-                //ex: source = "//opgg-static.akamaized.net/images/lol/item/3071.png?image=q_auto,w_42&amp;v=1596679559" and we want to get 3071, all item ids are exactly 4 numbers
-                MatchCollection regex = Regex.Matches(node.GetAttributeValue("src", "nothing"), @"\b(\d{4})\b");
+                nodes = htmlDoc.DocumentNode.SelectNodes(ItemUtility.Xpaths[itemtype]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
 
-                //check if an id was found
-                if (regex.Count > 0)
+            if (nodes != default)
+            {
+                foreach (HtmlNode node in nodes)
                 {
-                    string id = regex[0].Value;
+                    //parse each id from the image source using regex
+                    //ex: source = "//opgg-static.akamaized.net/images/lol/item/3071.png?image=q_auto,w_42&amp;v=1596679559" and we want to get 3071, all item ids are exactly 4 numbers
+                    MatchCollection regex = Regex.Matches(node.GetAttributeValue("src", "nothing"), @"\b(\d{4})\b");
 
-                    //check if id is already in the item set
-                    if (!ItemUtility.allItemIds.Contains(id))
+                    //check if an id was found
+                    if (regex.Count > 0)
                     {
-                        itemIds.Add(id);
+                        string id = regex[0].Value;
 
-                        ItemUtility.allItemIds.Add(id);
+                        //check if id is already in the item set
+                        if (!ItemUtility.allItemIds.Contains(id))
+                        {
+                            itemIds.Add(id);
+
+                            ItemUtility.allItemIds.Add(id);
+                        }
                     }
                 }
             }
-
+            
             return itemIds;
         }
 
@@ -199,7 +210,6 @@ namespace LoL_Generator
                 Item newItem = new Item();
 
                 newItem.id = id;
-                newItem.count = (id == "2003") ? 2 : 1;
 
                 items.Add(newItem);
             }
@@ -227,6 +237,7 @@ namespace LoL_Generator
         public static Dictionary<string, string> Xpaths = new Dictionary<string, string>()
             {
                 {"Starters", "//text()[contains(., 'Starter Items')]/ancestor::tr[1]//img"},
+                {"AltStarters", "//text()[contains(., 'Recommended Builds')]/preceding::tr[1]//img"},
                 {"Skill Order", "//table[@class='champion-skill-build__table']//td"},
                 {"Upgrade Order",  "//table[@class='champion-skill-build__table']//td/ancestor::td[1]//ul//span"},
                 {"Core Build","//text()[contains(., 'Recommended Builds')]/ancestor::tr[1]//img"},
