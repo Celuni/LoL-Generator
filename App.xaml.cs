@@ -55,6 +55,7 @@ namespace LoL_Generator
         {
             window = new MainWindow();
             window.Hide();
+            window.Show();
 
             //create the tray icon
             notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
@@ -75,7 +76,7 @@ namespace LoL_Generator
 
             base.OnStartup(e);
         }
-               
+
         protected override void OnExit(ExitEventArgs e)
         {
             LoL_Generator.Properties.Settings.Default.Save();
@@ -97,7 +98,7 @@ namespace LoL_Generator
                 //display the waiting overlay
                 Action act = () =>
                 {
-                    if (window.ChampionOverlay.Visibility == Visibility.Visible)
+                    if (window.SettingsOverlay.Visibility == Visibility.Collapsed && window.ChampionOverlay.Visibility == Visibility.Visible)
                     {
                         window.ChampionOverlay.Visibility = Visibility.Collapsed;
                         window.WaitingOverlay.Visibility = Visibility.Visible;
@@ -317,25 +318,28 @@ namespace LoL_Generator
                                 Action act = () => {
                                     window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
                                 
-                                    if (window.WaitingOverlay.Visibility == Visibility.Visible)
+                                    if (window.SettingsOverlay.Visibility == Visibility.Collapsed)
                                     {
-                                        window.WaitingOverlay.Visibility = Visibility.Collapsed;
-                                        window.ChampionOverlay.Visibility = Visibility.Visible;
-                                    }
+                                        if (window.WaitingOverlay.Visibility == Visibility.Visible)
+                                        {
+                                            window.WaitingOverlay.Visibility = Visibility.Collapsed;
+                                            window.ChampionOverlay.Visibility = Visibility.Visible;
+                                        }
 
-                                    if (window.Visibility == Visibility.Hidden)
-                                    {
-                                        window.Show();
-                                    }
+                                        if (window.Visibility == Visibility.Hidden)
+                                        {
+                                            window.Show();
+                                        }
 
-                                    if (window.WindowState == WindowState.Minimized)
-                                    {
-                                        window.WindowState = WindowState.Normal;
-                                    }
+                                        if (window.WindowState == WindowState.Minimized)
+                                        {
+                                            window.WindowState = WindowState.Normal;
+                                        }
 
-                                    window.Activate();
-                                    window.Topmost = true;
-                                    window.Topmost = false;
+                                        window.Activate();
+                                        window.Topmost = true;
+                                        window.Topmost = false;
+                                    }
                                 };
                                 window.Dispatcher.Invoke(act);
                             }
@@ -702,13 +706,13 @@ namespace LoL_Generator
     {
         //dictionary of the images of each role
         public static Dictionary<string, string> imagePaths = new Dictionary<string, string>()
-            {
-                {"top",  "https://ultimate-bravery.net/images/roles/top_icon.png"},
-                {"jungle",  "https://ultimate-bravery.net/images/roles/jungle_icon.png"},
-                {"mid",  "https://ultimate-bravery.net/images/roles/mid_icon.png"},
-                {"adc", "https://ultimate-bravery.net/images/roles/bot_icon.png"},
-                {"support", "https://ultimate-bravery.net/images/roles/support_icon.png"}
-            };
+        {
+            {"top",  "https://ultimate-bravery.net/images/roles/top_icon.png"},
+            {"jungle",  "https://ultimate-bravery.net/images/roles/jungle_icon.png"},
+            {"mid",  "https://ultimate-bravery.net/images/roles/mid_icon.png"},
+            {"adc", "https://ultimate-bravery.net/images/roles/bot_icon.png"},
+            {"support", "https://ultimate-bravery.net/images/roles/support_icon.png"}
+        };
     }
 }
 
