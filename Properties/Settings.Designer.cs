@@ -70,5 +70,41 @@ namespace LoL_Generator.Properties {
                 this["Top"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<Key>None</Key>")]
+        public global::System.Windows.Input.Key Key {
+            get {
+                return ((global::System.Windows.Input.Key)(this["Key"]));
+            }
+            set {
+                this["Key"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableCheckBox {
+            get {
+                return ((bool)(this["EnableCheckBox"]));
+            }
+            set {
+                this["EnableCheckBox"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ReanableCheckBox {
+            get {
+                return ((bool)(this["ReanableCheckBox"]));
+            }
+            set {
+                this["ReanableCheckBox"] = value;
+            }
+        }
     }
 }

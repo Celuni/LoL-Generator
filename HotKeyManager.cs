@@ -31,7 +31,8 @@ namespace LoL_Generator
         public Action<HotKey> Action { get; private set; }
         public int Id { get; set; }
 
-       
+        public bool result;
+
 
         // ******************************************************************
         public HotKey(Key k, KeyModifier keyModifiers, Action<HotKey> action, bool register = true)
@@ -50,7 +51,7 @@ namespace LoL_Generator
         {
             int virtualKeyCode = KeyInterop.VirtualKeyFromKey(Key);
             Id = virtualKeyCode + ((int)KeyModifiers * 0x10000);
-            bool result = RegisterHotKey(IntPtr.Zero, Id, (UInt32)KeyModifiers, (UInt32)virtualKeyCode);
+            result = RegisterHotKey(IntPtr.Zero, Id, (UInt32)KeyModifiers, (UInt32)virtualKeyCode);
 
             if (_dictHotKeyToCalBackProc == null)
             {
@@ -71,6 +72,7 @@ namespace LoL_Generator
             if (_dictHotKeyToCalBackProc.TryGetValue(Id, out hotKey))
             {
                 UnregisterHotKey(IntPtr.Zero, Id);
+                _dictHotKeyToCalBackProc.Remove(Id);
             }
         }
 
@@ -79,10 +81,6 @@ namespace LoL_Generator
         {
             if (!handled)
             {
-                if (msg.message == 0x100)
-                {
-                    Console.WriteLine(((Keys)((int)((long)msg.wParam))) | Control.ModifierKeys);
-                }
                 if (msg.message == WmHotKey)
                 {
                     HotKey hotKey;

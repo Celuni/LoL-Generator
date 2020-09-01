@@ -20,19 +20,21 @@ namespace LoL_Generator
     {
         StackPanel lastWindow;
         string keybinding;
-        Key lastKey;
+        HotKey _hotKey;
 
         public MainWindow()
         {
             //initiate window
             InitializeComponent();
 
-            HotKey _hotKey = new HotKey(Key.S, KeyModifier.Alt, OnHotKeyHandler);
-        }
+            //set the default rune page and item sets and assign the generate loudout button to a function
+            DefaultRunePage.Tag = Properties.Settings.Default.runePageID;
+            DefaultItemPage.Tag = Properties.Settings.Default.itemSetID;
 
-        private void OnHotKeyHandler(HotKey hotKey)
-        {
-            
+            _hotKey = new HotKey(Properties.Settings.Default.Key, KeyModifier.Alt, OnHotKeyHandler);
+            EnableCheckBox.IsChecked = Properties.Settings.Default.EnableCheckBox;
+            HotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.Key;
+            ReanableCheckBox.IsChecked = Properties.Settings.Default.ReanableCheckBox;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -45,7 +47,7 @@ namespace LoL_Generator
 
         private void MoveWindow(object sender, MouseButtonEventArgs e)
         {
-            DragMove();
+           DragMove();
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)
@@ -60,71 +62,97 @@ namespace LoL_Generator
 
         private void SettingsButton(object sender, RoutedEventArgs e)
         {
-            if (SettingsOverlay.Visibility == Visibility.Collapsed)
+            if (SettingsOverlay.Visibility == Visibility.Hidden)
             {
                 lastWindow = (WaitingOverlay.Visibility == Visibility.Visible) ? WaitingOverlay : ChampionOverlay;
 
                 if (WaitingOverlay.Visibility == Visibility.Visible)
                 {
-                    WaitingOverlay.Visibility = Visibility.Collapsed;
+                    WaitingOverlay.Visibility = Visibility.Hidden;
                 }
                 else if (ChampionOverlay.Visibility == Visibility.Visible)
                 {
-                    ChampionOverlay.Visibility = Visibility.Collapsed;
+                    ChampionOverlay.Visibility = Visibility.Hidden;
                 }
 
                 SettingsOverlay.Visibility = Visibility.Visible;
             }
             else if (SettingsOverlay.Visibility == Visibility.Visible)
             {
-                SettingsOverlay.Visibility = Visibility.Collapsed;
-                lastWindow.Visibility = Visibility.Visible;
+                SettingsOverlay.Visibility = Visibility.Hidden;
+
+                if (!App.listedSets)
+                {
+                    lastWindow.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    ChampionOverlay.Visibility = Visibility.Visible;
+                }
             }
         }
 
-        private void ActivateClick(object sender, RoutedEventArgs e)
+        private void EnableCheckChange(object sender, RoutedEventArgs e)
         {
+            App.autoGenerate = (EnableCheckBox.IsChecked == true) ? true : false;
 
+            Properties.Settings.Default.EnableCheckBox = (bool)EnableCheckBox.IsChecked;
+            Properties.Settings.Default.Save();
         }
 
-        private void HotkeyClick(object sender, RoutedEventArgs e)
+        private void RenableCheckChange(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.ReanableCheckBox = (bool)ReanableCheckBox.IsChecked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void OnHotKeyHandler(HotKey hotKey)
+        {
+            EnableCheckBox.IsChecked = (EnableCheckBox.IsChecked == true) ? false : true;
+        }
+
+        private void HotkeyTextboxClick(object sender, RoutedEventArgs e)
         {
             ToggleTextBlock.Visibility = Visibility.Visible;
             keybinding = HotkeyTextBox.Text;
 
-            HotkeyTextBox.Clear();
+            HotkeyTextBox.Text = "Alt + ";
         }
 
         private void ReadKeys(object sender, System.Windows.Input.KeyEventArgs e)
         {
             e.Handled = true;
 
-            if (e.Key == Key.Escape || e.Key == Key.Enter)
+            if (e.Key == Key.Escape)
             {
-                if (e.Key == Key.Escape)
-                {
-                    HotkeyTextBox.Text = keybinding;
-                }
+                HotkeyTextBox.Text = keybinding;
 
+                ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
                 ToggleTextBlock.Visibility = Visibility.Hidden;
                 Keyboard.ClearFocus();
 
                 return;
             }
 
-            if (lastKey != e.Key)
-            {
-                if (string.IsNullOrEmpty(HotkeyTextBox.Text))
-                {
-                    HotkeyTextBox.Text = e.Key.ToString();
-                }
-                else
-                {
-                    HotkeyTextBox.Text += " + " + e.Key.ToString();
-                }
-            }
+            _hotKey.Dispose();
+            _hotKey = new HotKey(e.Key, KeyModifier.Alt, OnHotKeyHandler);
 
-            lastKey = e.Key;
+            if (_hotKey.result)
+            {
+                HotkeyTextBox.Text = "Alt + " + e.Key.ToString();
+
+                Properties.Settings.Default.Key = e.Key;
+                Properties.Settings.Default.Save();
+
+                ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
+                ToggleTextBlock.Visibility = Visibility.Hidden;
+                Keyboard.ClearFocus();
+            }
+            else
+            {
+                keybinding = "Alt +";
+                ToggleTextBlock.Text = "Error: Invalid Key";
+            }
         }
     }
 }

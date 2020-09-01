@@ -25,45 +25,49 @@
                     <Image Source="https://cdn2.iconfinder.com/data/icons/flat-icons-web/40/Remove-512.png"></Image>
                 </Button>
 
-                <Button HorizontalAlignment="Right" Width="20" Height="25" VerticalAlignment="Top" Background="Transparent" BorderBrush="{x:Null}" Margin="0,0,27,0" Click="MinimizeWindow" ClickMode="Hover">
+                <Button HorizontalAlignment="Right" Width="20" Height="25" VerticalAlignment="Top" Background="Transparent" BorderBrush="{x:Null}" Margin="0,0,27,0" Click="MinimizeWindow">
                     <Image Source="https://cdn0.iconfinder.com/data/icons/ui-16px-perfect-megapack-line/16/113_minimize-256.png">
                     </Image>
                 </Button>
             </Grid>
 
-            <StackPanel x:Name= "SettingsOverlay" Visibility="Visible" Margin="10,30,10,0" VerticalAlignment="Top" >
+            <StackPanel x:Name= "SettingsOverlay" Visibility="Hidden" Margin="10,30,10,0" VerticalAlignment="Top" >
                 <TextBlock Text="Automatic Generation" FontWeight="Bold" HorizontalAlignment="Center" />
                 
                 <UniformGrid Rows="1" Margin="0,10,0,0">
-                    <TextBlock Text="Activate" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                    <CheckBox x:Name="ActivateCheckBox" Click="ActivateClick" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        
+                    <TextBlock Text="Enable" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="EnableCheckBox" Checked="EnableCheckChange" Unchecked="EnableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
                     </CheckBox>
                 </UniformGrid>
-                
-                <UniformGrid Rows="1" Margin="0,10,0,0">
+
+                <UniformGrid Rows="1" Columns="2" Margin="0,10,0,0">
                     <TextBlock Text="Toggle" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
                     <TextBox x:Name="HotkeyTextBox"
-                        PreviewMouseDown="HotkeyClick"
+                        PreviewMouseDown="HotkeyTextboxClick"
                         PreviewKeyDown="ReadKeys"
                         Height="20" IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                         <TextBox.ContextMenu>
-                            <ContextMenu Visibility="Collapsed" />
+                            <ContextMenu Visibility="Hidden" />
                         </TextBox.ContextMenu>
                     </TextBox>
                 </UniformGrid>
                 <UniformGrid Rows="1">
                     <TextBlock />
-                    <TextBlock x:Name="ToggleTextBlock" Text="Enter to Save, Esc to Cancel" HorizontalAlignment="Center" FontSize="10" VerticalAlignment="Top" Visibility="Hidden"/>
+                    <TextBlock x:Name="ToggleTextBlock" Text="Press a Key, Esc to Cancel" HorizontalAlignment="Center" FontSize="10" VerticalAlignment="Top" Visibility="Hidden"/>
                 </UniformGrid>
 
+                <UniformGrid Rows="1" Margin="0,-3,0,0" >
+                    <TextBlock Text="Enable at Champ Select" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="ReanableCheckBox" Checked="RenableCheckChange" Unchecked="RenableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    </CheckBox>
+                </UniformGrid>
             </StackPanel>
 
-            <StackPanel x:Name= "WaitingOverlay" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+            <StackPanel x:Name= "WaitingOverlay" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible">
                 <TextBlock HorizontalAlignment="Center"  VerticalAlignment="Center" Text="Waiting for a champion to be picked..."></TextBlock>
             </StackPanel>
 
-            <StackPanel x:Name="ChampionOverlay" Visibility="Collapsed">
+            <StackPanel x:Name="ChampionOverlay" Visibility="Hidden">
 
                 <Image x:Name="ChampionIcon" Width="100" Height="100" Margin="0,60,0,0"/>
 
