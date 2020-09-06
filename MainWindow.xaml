@@ -36,7 +36,7 @@
                 
                 <UniformGrid Rows="1" Margin="0,10,0,0">
                     <TextBlock Text="Enable" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                    <CheckBox x:Name="EnableCheckBox" Checked="EnableCheckChange" Unchecked="EnableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <CheckBox x:Name="EnableCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableCheckBox, Mode=TwoWay}" Checked="EnableCheckChange" Unchecked="EnableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
                     </CheckBox>
                 </UniformGrid>
 
@@ -58,7 +58,27 @@
 
                 <UniformGrid Rows="1" Margin="0,-3,0,0" >
                     <TextBlock Text="Enable at Champ Select" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                    <CheckBox x:Name="ReanableCheckBox" Checked="RenableCheckChange" Unchecked="RenableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <CheckBox x:Name="ReanableCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ReanableCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    </CheckBox>
+                </UniformGrid>
+
+                <UniformGrid Rows="1" Margin="0,10,0,0">
+                    <TextBlock Text="Generate Rune Page" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="EnableRuneCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableRuneCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    </CheckBox>
+                </UniformGrid>
+
+                <UniformGrid Rows="1" Margin="0,10,0,0">
+                    <TextBlock Text="Generate Item Set" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="EnableItemCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableItemCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    </CheckBox>
+                </UniformGrid>
+
+                <TextBlock Text="Champion Interface" Margin="0,10,0,0" FontWeight="Bold" HorizontalAlignment="Center" />
+
+                <UniformGrid Rows="1" Margin="0,10,0,0">
+                    <TextBlock Text="Enable" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="EnableInterfaceCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableInterfaceCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     </CheckBox>
                 </UniformGrid>
             </StackPanel>

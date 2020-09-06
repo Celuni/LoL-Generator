@@ -95,15 +95,6 @@ namespace LoL_Generator
         private void EnableCheckChange(object sender, RoutedEventArgs e)
         {
             App.autoGenerate = (EnableCheckBox.IsChecked == true) ? true : false;
-
-            Properties.Settings.Default.EnableCheckBox = (bool)EnableCheckBox.IsChecked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void RenableCheckChange(object sender, RoutedEventArgs e)
-        {
-            Properties.Settings.Default.ReanableCheckBox = (bool)ReanableCheckBox.IsChecked;
-            Properties.Settings.Default.Save();
         }
 
         private void OnHotKeyHandler(HotKey hotKey)

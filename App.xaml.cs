@@ -63,7 +63,7 @@ namespace LoL_Generator
 
             window.LoadoutButton.Click += new RoutedEventHandler(GenerateLoadout);
             autoGenerate = (bool)window.EnableCheckBox.IsChecked;
-
+            Console.WriteLine(LoL_Generator.Properties.Settings.Default.runePageID);
             //start the background task to poll for the league client
             tokenSource = new CancellationTokenSource();
             StartNewTask(InitiatePolling, TimeSpan.FromSeconds(3), tokenSource.Token);
@@ -125,7 +125,7 @@ namespace LoL_Generator
                 tokenSource.Cancel();
 
                 //get the location of the league client
-                string clientpath = System.IO.Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
+                string clientpath = Path.GetDirectoryName(GetProcessFilename(Process.GetProcessesByName("LeagueClient").FirstOrDefault()));
                 lockfileloc = clientpath + @"\lockfile";
 
                 //start the background task to poll for the lockfile
@@ -199,8 +199,7 @@ namespace LoL_Generator
 
                     if (gamephase == "\"ChampSelect\"")
                     {
-                        //check to make sure the rune pages and item sets the player has are not already listed
-                        if (!listedSets)
+                        if (!listedSets && LoL_Generator.Properties.Settings.Default.EnableInterfaceCheckBox)
                         {
                             window.Dispatcher.Invoke(new Action(() => autoGenerate = ((bool)window.ReanableCheckBox.IsChecked) ? true : autoGenerate));
 
@@ -233,7 +232,7 @@ namespace LoL_Generator
                                 window.ItemMenu.Items.Clear();
                                 window.ItemMenu.Items.Add(defaultItemPage);
                                 window.ItemMenu.SelectedItem = defaultItemPage;
-
+                                
                                 foreach (ItemSet itemPage in itemPagesObject.itemSets)
                                 {
                                     if (itemPage.uid != LoL_Generator.Properties.Settings.Default.itemSetID)
@@ -245,6 +244,23 @@ namespace LoL_Generator
                             window.Dispatcher.Invoke(act);
 
                             listedSets = true;
+                        }
+                        else if (!LoL_Generator.Properties.Settings.Default.EnableInterfaceCheckBox)
+                        {
+                            Action act = () =>
+                            {
+                                ComboBoxItem defaultRunePage = (ComboBoxItem)window.RuneMenu.FindName("DefaultRunePage");
+                                window.RuneMenu.Items.Clear();
+                                window.RuneMenu.Items.Add(defaultRunePage);
+                                window.RuneMenu.SelectedItem = defaultRunePage;
+
+                                ComboBoxItem defaultItemPage = (ComboBoxItem)window.ItemMenu.FindName("DefaultItemPage");
+                                window.ItemMenu.Items.Clear();
+                                window.ItemMenu.Items.Add(defaultItemPage);
+                                window.ItemMenu.SelectedItem = defaultItemPage;
+                            };
+
+                            window.Dispatcher.Invoke(act);
                         }
                         //get the id of the current champion selected using the ChampionHoverInfo class
                         string championHoverJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-champ-select/v1/session", null);
@@ -287,53 +303,60 @@ namespace LoL_Generator
                                 //retrieve the roles from op.gg using the above XPath query
                                 HtmlNodeCollection roles = htmlDoc.DocumentNode.SelectNodes(xpath);
                                 
-                                foreach (HtmlNode node in roles)
+                                if (LoL_Generator.Properties.Settings.Default.EnableInterfaceCheckBox)
                                 {
-                                    //retrieve the assigned to the data-position element which contains the name of the role
-                                    string role = node.GetAttributeValue("data-position", "nothing").ToLower();
-
-                                    //set the first role as the primary role and the current role
-                                    if (roles.IndexOf(node) == 0)
+                                    foreach (HtmlNode node in roles)
                                     {
-                                        primaryrole = role;
-                                        currole = role;
+                                        //retrieve the assigned to the data-position element which contains the name of the role
+                                        string role = node.GetAttributeValue("data-position", "nothing").ToLower();
+
+                                        //set the first role as the primary role and the current role
+                                        if (roles.IndexOf(node) == 0)
+                                        {
+                                            primaryrole = role;
+                                            currole = role;
+                                        }
+
+                                        //add the role as a button to the UI
+                                        AddRoleButton(role, roles.IndexOf(node) == 0);
                                     }
 
-                                    //add the role as a button to the UI
-                                    AddRoleButton(role, roles.IndexOf(node) == 0);
+                                    //add the recommened summoner spells to the UI
+                                    DisplaySummoners(htmlDoc);
+
+                                    //display the champion icon and champion info overlay
+                                    Action act = () => {
+                                        window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
+
+                                        if (window.SettingsOverlay.Visibility == Visibility.Hidden)
+                                        {
+                                            if (window.WaitingOverlay.Visibility == Visibility.Visible)
+                                            {
+                                                window.WaitingOverlay.Visibility = Visibility.Hidden;
+                                                window.ChampionOverlay.Visibility = Visibility.Visible;
+                                            }
+
+                                            if (window.Visibility == Visibility.Hidden)
+                                            {
+                                                window.Show();
+                                            }
+
+                                            if (window.WindowState == WindowState.Minimized)
+                                            {
+                                                window.WindowState = WindowState.Normal;
+                                            }
+
+                                            window.Activate();
+                                            window.Topmost = true;
+                                            window.Topmost = false;
+                                        }
+                                    };
+                                    window.Dispatcher.Invoke(act);
                                 }
-
-                                //add the recommened summoner spells to the UI
-                                DisplaySummoners(htmlDoc);
-
-                                //display the champion icon and champion info overlay
-                                Action act = () => {
-                                    window.ChampionIcon.Source = new BitmapImage(new Uri($@"https://opgg-static.akamaized.net/images/lol/champion/{champion}.png?image=q_auto,w_140&v=1596679559", UriKind.Absolute));
-                                
-                                    if (window.SettingsOverlay.Visibility == Visibility.Hidden)
-                                    {
-                                        if (window.WaitingOverlay.Visibility == Visibility.Visible)
-                                        {
-                                            window.WaitingOverlay.Visibility = Visibility.Hidden;
-                                            window.ChampionOverlay.Visibility = Visibility.Visible;
-                                        }
-
-                                        if (window.Visibility == Visibility.Hidden)
-                                        {
-                                            window.Show();
-                                        }
-
-                                        if (window.WindowState == WindowState.Minimized)
-                                        {
-                                            window.WindowState = WindowState.Normal;
-                                        }
-
-                                        window.Activate();
-                                        window.Topmost = true;
-                                        window.Topmost = false;
-                                    }
-                                };
-                                window.Dispatcher.Invoke(act);
+                                else
+                                {
+                                    currole = roles[0].GetAttributeValue("data-position", "nothing").ToLower();
+                                }
                             }
 
                             //get the id of the locked champion (if a champion was locked)
@@ -344,8 +367,14 @@ namespace LoL_Generator
                         {
                             Action act = () =>
                             {
-                                GenerateRunePage(champion, currole, (int)((ComboBoxItem)window.RuneMenu.SelectedItem).Tag);
-                                GenerateItemPage(champion, currole, (string)((ComboBoxItem)window.ItemMenu.SelectedItem).Tag);
+                                if (LoL_Generator.Properties.Settings.Default.EnableRuneCheckBox)
+                                {
+                                    GenerateRunePage(champion, currole, (int)((ComboBoxItem)window.RuneMenu.SelectedItem).Tag);
+                                }
+                                if (LoL_Generator.Properties.Settings.Default.EnableItemCheckBox)
+                                {
+                                    GenerateItemPage(champion, currole, (string)((ComboBoxItem)window.ItemMenu.SelectedItem).Tag);
+                                }
                             };
                             window.Dispatcher.Invoke(act);
 
@@ -482,8 +511,14 @@ namespace LoL_Generator
             //convert the rune page object into a json file
             string runeJson = JsonConvert.SerializeObject(runePage);
 
-            //check if the rune page id has not been assigned, if it has not, create a new page
-            if (id == default)
+            ResponseBody responseBody = default;
+            if (id != default)
+            {
+                //if the id has been assigned send a put request to update the rune page
+                string responseBodyJson = await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
+                responseBody = JsonConvert.DeserializeObject<ResponseBody>(responseBodyJson);
+            }
+            if (id == default || (responseBody != default && responseBody.httpStatus == 404))
             {
                 //send a post request to upload the new rune page
                 await SendRequestAsync("POST", $"https://127.0.0.1:{port}/lol-perks/v1/pages/", runeJson);
@@ -494,13 +529,7 @@ namespace LoL_Generator
 
                 //assign the new id to the default rune page id setting and the current combobox item tag which contains the id of the rune page
                 LoL_Generator.Properties.Settings.Default.runePageID = currentRunePageObject.id;
-                LoL_Generator.Properties.Settings.Default.Save();
                 ((ComboBoxItem)window.RuneMenu.SelectedItem).Tag = currentRunePageObject.id;
-            }
-            else
-            {
-                //if the id has been assigned send a put request to update the rune page
-                await SendRequestAsync("PUT", $"https://127.0.0.1:{port}/lol-perks/v1/pages/{id}", runeJson);
             }
         }
 
@@ -521,14 +550,18 @@ namespace LoL_Generator
             ItemSets itemPagesObject = JsonConvert.DeserializeObject<ItemSets>(itemPagesJson);
 
             int exisitingIndex = default;
-            if (string.IsNullOrEmpty(uid))
-            {
-                itemPagesObject.itemSets.Add(itemSet);
-            }
-            else
+            if (!string.IsNullOrEmpty(uid))
             {
                 exisitingIndex = itemPagesObject.itemSets.FindIndex(x => x.uid == uid);
-                itemPagesObject.itemSets[exisitingIndex] = itemSet;
+
+                if (exisitingIndex != -1)
+                {
+                    itemPagesObject.itemSets[exisitingIndex] = itemSet;
+                }
+            }
+            if (string.IsNullOrEmpty(uid) || exisitingIndex == -1)
+            {
+                itemPagesObject.itemSets.Add(itemSet);
             }
 
             string itemsetsJson = JsonConvert.SerializeObject(itemPagesObject);
@@ -538,13 +571,12 @@ namespace LoL_Generator
             itemPagesJson = await SendRequestAsync("GET", $"https://127.0.0.1:{port}/lol-item-sets/v1/item-sets/{summonerId}/sets", null);
             itemPagesObject = JsonConvert.DeserializeObject<ItemSets>(itemPagesJson);
 
-            int index = (string.IsNullOrEmpty(uid)) ? itemPagesObject.itemSets.Count - 1 : exisitingIndex;
+            int index = (string.IsNullOrEmpty(uid) || exisitingIndex == -1) ? itemPagesObject.itemSets.Count - 1 : exisitingIndex;
             string newuid = itemPagesObject.itemSets[index].uid;
 
             if (string.IsNullOrEmpty(uid) || (string)((ComboBoxItem)window.ItemMenu.SelectedItem).Content == "Default")
             {
                 LoL_Generator.Properties.Settings.Default.itemSetID = newuid;
-                LoL_Generator.Properties.Settings.Default.Save();
             }
 
             ((ComboBoxItem)window.ItemMenu.SelectedItem).Tag = newuid;
@@ -580,19 +612,8 @@ namespace LoL_Generator
                 //send the request
                 HttpResponseMessage response = await httpClient.SendAsync(request);
 
-                if (method == "POST" || method == "PUT")
-                {
-                    Console.WriteLine(response.StatusCode);
-                }
-
-                //return data if it is a GET request
-                if (method == "GET")
-                {
-                    return await response.Content.ReadAsStringAsync();
-                }
+                return await response.Content.ReadAsStringAsync();
             }
-
-            return null;
         }
 
         //starts a new background task primarily using the function to be looped and the time interval
@@ -692,6 +713,11 @@ namespace LoL_Generator
     {
         public long accountId;
         public List<ItemSet> itemSets;
+    }
+
+    public class ResponseBody
+    {
+        public int httpStatus;
     }
 
     public static class Utility
