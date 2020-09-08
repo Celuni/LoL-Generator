@@ -36,7 +36,7 @@
                 
                 <UniformGrid Rows="1" Margin="0,10,0,0">
                     <TextBlock Text="Enable" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                    <CheckBox x:Name="EnableCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableCheckBox, Mode=TwoWay}" Checked="EnableCheckChange" Unchecked="EnableCheckChange" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <CheckBox x:Name="EnableCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     </CheckBox>
                 </UniformGrid>
 

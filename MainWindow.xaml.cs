@@ -27,14 +27,8 @@ namespace LoL_Generator
             //initiate window
             InitializeComponent();
 
-            //set the default rune page and item sets and assign the generate loudout button to a function
-            DefaultRunePage.Tag = Properties.Settings.Default.runePageID;
-            DefaultItemPage.Tag = Properties.Settings.Default.itemSetID;
-
             _hotKey = new HotKey(Properties.Settings.Default.Key, KeyModifier.Alt, OnHotKeyHandler);
-            EnableCheckBox.IsChecked = Properties.Settings.Default.EnableCheckBox;
             HotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.Key;
-            ReanableCheckBox.IsChecked = Properties.Settings.Default.ReanableCheckBox;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -90,11 +84,6 @@ namespace LoL_Generator
                     ChampionOverlay.Visibility = Visibility.Visible;
                 }
             }
-        }
-
-        private void EnableCheckChange(object sender, RoutedEventArgs e)
-        {
-            App.autoGenerate = (EnableCheckBox.IsChecked == true) ? true : false;
         }
 
         private void OnHotKeyHandler(HotKey hotKey)

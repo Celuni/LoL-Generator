@@ -25,25 +25,23 @@ namespace LoL_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int runePageID {
+        public global::System.Collections.Specialized.StringCollection defRunePageIDs {
             get {
-                return ((int)(this["runePageID"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["defRunePageIDs"]));
             }
             set {
-                this["runePageID"] = value;
+                this["defRunePageIDs"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string itemSetID {
+        public global::System.Collections.Specialized.StringCollection defItemSetIDs {
             get {
-                return ((string)(this["itemSetID"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["defItemSetIDs"]));
             }
             set {
-                this["itemSetID"] = value;
+                this["defItemSetIDs"] = value;
             }
         }
         
