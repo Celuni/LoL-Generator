@@ -6,4 +6,4 @@ Automatically generates rune pages and itemsets in League of Legends. Uses C# wi
 
 Preview  
 --------
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/ZKNv3YB/lolgen-preview.png" alt="lolgen-preview" border="0" /></a>
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/1fBZkNv/image.png" alt="image" border="0" /></a>
