@@ -11,14 +11,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
-using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
-using System.ComponentModel;
 
 namespace LoL_Generator
 {
@@ -55,26 +53,11 @@ namespace LoL_Generator
         {
             window = new MainWindow();
             window.Hide();
-            //window.Show();
 
             //create the tray icon
             notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
 
             window.LoadoutButton.Click += new RoutedEventHandler(GenerateLoadout);
-
-/*            LoL_Generator.Properties.Settings.Default.defRunePageIDs = default;
-            LoL_Generator.Properties.Settings.Default.defItemSetIDs = default;*/
-            if (LoL_Generator.Properties.Settings.Default.defRunePageIDs != default && LoL_Generator.Properties.Settings.Default.defItemSetIDs != default)
-            {
-                foreach (string str in LoL_Generator.Properties.Settings.Default.defRunePageIDs)
-                {
-                    Console.WriteLine(str);
-                }
-                foreach (string str in LoL_Generator.Properties.Settings.Default.defItemSetIDs)
-                {
-                    Console.WriteLine(str);
-                }
-            }
 
             //start the background task to poll for the league client
             tokenSource = new CancellationTokenSource();
@@ -412,8 +395,6 @@ namespace LoL_Generator
                                 }
                             };
                             window.Dispatcher.Invoke(act);
-
-                            Console.WriteLine("hi");
                         }
                     }
 
@@ -569,20 +550,24 @@ namespace LoL_Generator
                     RunePageInfo currentRunePageObject = JsonConvert.DeserializeObject<RunePageInfo>(currentRunePageJson);
 
                     ((ComboBoxItem)window.RuneMenu.SelectedItem).Tag = currentRunePageObject.id;
-                    if (LoL_Generator.Properties.Settings.Default.defRunePageIDs == default)
-                    {
-                        LoL_Generator.Properties.Settings.Default.defRunePageIDs = new System.Collections.Specialized.StringCollection();
-                    }
-                    for (int i = 0; i < LoL_Generator.Properties.Settings.Default.defRunePageIDs.Count - 1; i++)
-                    {
-                        if (LoL_Generator.Properties.Settings.Default.defRunePageIDs[i].Contains(summonerId.ToString()))
-                        {
-                            LoL_Generator.Properties.Settings.Default.defRunePageIDs[i] = summonerId + " " + currentRunePageObject.id;
-                            return;
-                        }
-                    }
 
-                    LoL_Generator.Properties.Settings.Default.defRunePageIDs.Add(summonerId + " " + currentRunePageObject.id);
+                    if ((string)((ComboBoxItem)window.RuneMenu.SelectedItem).Content == "Default")
+                    {
+                        if (LoL_Generator.Properties.Settings.Default.defRunePageIDs == default)
+                        {
+                            LoL_Generator.Properties.Settings.Default.defRunePageIDs = new System.Collections.Specialized.StringCollection();
+                        }
+                        for (int i = 0; i < LoL_Generator.Properties.Settings.Default.defRunePageIDs.Count; i++)
+                        {
+                            if (LoL_Generator.Properties.Settings.Default.defRunePageIDs[i].Contains(summonerId.ToString()))
+                            {
+                                LoL_Generator.Properties.Settings.Default.defRunePageIDs[i] = summonerId + " " + currentRunePageObject.id;
+                                return;
+                            }
+                        }
+
+                        LoL_Generator.Properties.Settings.Default.defRunePageIDs.Add(summonerId + " " + currentRunePageObject.id);
+                    }
                 }
             }
         }
@@ -630,13 +615,14 @@ namespace LoL_Generator
             string newuid = itemPagesObject.itemSets[index].uid;
 
             ((ComboBoxItem)window.ItemMenu.SelectedItem).Tag = newuid;
+
             if (uid == default || (string)((ComboBoxItem)window.ItemMenu.SelectedItem).Content == "Default")
             {
                 if (LoL_Generator.Properties.Settings.Default.defItemSetIDs == default)
                 {
                     LoL_Generator.Properties.Settings.Default.defItemSetIDs = new System.Collections.Specialized.StringCollection();
                 }
-                for (int i = 0; i < LoL_Generator.Properties.Settings.Default.defItemSetIDs.Count - 1; i++)
+                for (int i = 0; i < LoL_Generator.Properties.Settings.Default.defItemSetIDs.Count; i++)
                 {
                     if (LoL_Generator.Properties.Settings.Default.defItemSetIDs[i].Contains(summonerId.ToString()))
                     {

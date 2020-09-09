@@ -143,13 +143,13 @@ namespace LoL_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Setting {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool WindowsStartupCheckbox {
             get {
-                return ((string)(this["Setting"]));
+                return ((bool)(this["WindowsStartupCheckbox"]));
             }
             set {
-                this["Setting"] = value;
+                this["WindowsStartupCheckbox"] = value;
             }
         }
     }

@@ -74,13 +74,21 @@
                     </CheckBox>
                 </UniformGrid>
 
-                <TextBlock Text="Champion Interface" Margin="0,10,0,0" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="Other" Margin="0,10,0,0" FontWeight="Bold" HorizontalAlignment="Center" />
 
                 <UniformGrid Rows="1" Margin="0,10,0,0">
-                    <TextBlock Text="Enable" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <TextBlock Text="Enable Champ Interface" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
                     <CheckBox x:Name="EnableInterfaceCheckBox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=EnableInterfaceCheckBox, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     </CheckBox>
                 </UniformGrid>
+
+                <UniformGrid Rows="1" Margin="0,10,0,0">
+                    <TextBlock Text="Run On Startup" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <CheckBox x:Name="WindowsStartupCheckbox" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=WindowsStartupCheckbox, Mode=TwoWay}" Checked="OnStartupChecked" Unchecked="OnStartupChecked" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    </CheckBox>
+                </UniformGrid>
+
+                <Button Margin="0,10,0,0" Content="Reset Default Pages" Click ="ResetPagesButton" HorizontalAlignment="Center" VerticalAlignment="Center"></Button>
             </StackPanel>
 
             <StackPanel x:Name= "WaitingOverlay" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible">

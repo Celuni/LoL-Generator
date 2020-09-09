@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Win32;
 using System.ComponentModel;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Interop;
 
 namespace LoL_Generator
 {
@@ -21,6 +14,7 @@ namespace LoL_Generator
         StackPanel lastWindow;
         string keybinding;
         HotKey _hotKey;
+        RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
         public MainWindow()
         {
@@ -99,7 +93,7 @@ namespace LoL_Generator
             HotkeyTextBox.Text = "Alt + ";
         }
 
-        private void ReadKeys(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ReadKeys(object sender, KeyEventArgs e)
         {
             e.Handled = true;
 
@@ -132,6 +126,33 @@ namespace LoL_Generator
             {
                 keybinding = "Alt +";
                 ToggleTextBlock.Text = "Error: Invalid Key";
+            }
+        }
+
+        private void ResetPagesButton(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.defRunePageIDs = default;
+            Properties.Settings.Default.defItemSetIDs = default;
+
+            ComboBoxItem defaultRunePage = (ComboBoxItem)RuneMenu.FindName("DefaultRunePage");
+            defaultRunePage.Tag = default;
+
+            ComboBoxItem defaultItemPage = (ComboBoxItem)ItemMenu.FindName("DefaultItemPage");
+            defaultItemPage.Tag = default;
+        }
+
+        private void OnStartupChecked(object sender, RoutedEventArgs e)
+        {
+            if ((bool)WindowsStartupCheckbox.IsChecked)
+            {
+                if (rkApp.GetValue("LoL Generator") == null)
+                {
+                    rkApp.SetValue("LoL Generator", System.Reflection.Assembly.GetExecutingAssembly().Location);
+                }
+            }
+            else
+            {
+                rkApp.DeleteValue("LoL Generator");
             }
         }
     }
