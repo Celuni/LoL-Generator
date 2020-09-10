@@ -72,10 +72,17 @@
     <Compile Include="HotKeyManager.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="LoadingIcon.xaml.cs">
+      <DependentUpon>LoadingIcon.xaml</DependentUpon>
+    </Compile>
     <Compile Include="NotifyIconResources.xaml.cs">
       <DependentUpon>NotifyIconResources.xaml</DependentUpon>
     </Compile>
     <Compile Include="RunePage.cs" />
+    <Page Include="LoadingIcon.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -112,6 +119,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Resource Include="fonts\Friz Quadrata Bold.otf" />
+    <Resource Include="fonts\Friz Quadrata Italic.ttf" />
+    <Resource Include="fonts\Friz Quadrata Regular.ttf" />
+    <Resource Include="fonts\Friz Quadrata Std Medium.otf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -123,6 +134,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\568253.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\offline.png" />
+    <Resource Include="images\online.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

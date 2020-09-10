@@ -25,3 +25,5 @@ C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.Genera
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CoreCompileInputs.cache
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CopyComplete
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csprojAssemblyReference.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoadingIcon.baml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoadingIcon.g.cs
