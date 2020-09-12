@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 
 namespace LoL_Generator
@@ -157,6 +158,8 @@ namespace LoL_Generator
 
                     break;
             }
+
+            App.window.Dispatcher.Invoke(new Action(() => App.window.LoadoutProgress.Value += 1));
         }
 
         //retrieves item ids using XPath queries

@@ -16,7 +16,7 @@ namespace LoL_Generator
             {
                 return new DelegateCommand
                 {
-                    CanExecuteFunc = () => App.window.Visibility == Visibility.Hidden || App.window.WindowState == WindowState.Minimized,
+                    CanExecuteFunc = () => App.window.Visibility == Visibility.Hidden || App.window.WindowState == WindowState.Minimized || App.window.WindowState == WindowState.Normal,
                     CommandAction = () => {
                         if (App.window.Visibility == Visibility.Hidden)
                         {

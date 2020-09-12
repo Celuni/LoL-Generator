@@ -1,7 +1,9 @@
 ﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
 
 namespace LoL_Generator
@@ -56,6 +58,8 @@ namespace LoL_Generator
                         selectedPerkIds.Add(id);
                     }
                 }
+
+                App.window.Dispatcher.Invoke(new Action(() => App.window.LoadoutProgress.Value += 1));
             }
         }
     }
