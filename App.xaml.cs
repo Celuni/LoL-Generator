@@ -30,7 +30,7 @@ namespace LoL_Generator
 
         static string lockfileloc;
 
-        static string port;
+        public static string port;
         static string password;
         static byte[] encoding;
 
@@ -888,9 +888,9 @@ namespace LoL_Generator
             window.IntLoadoutProgress.Value = 0;
             window.IntLoadoutProgress.Maximum = 0;
         }
-
+        
         //sends REST API requests and returns data if applicable
-        async Task<string> SendRequestAsync(string method, string url, string json)
+        public static async Task<string> SendRequestAsync(string method, string url, string json)
         {
             //initiate the new request using the method and url parameters
             using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
@@ -901,7 +901,7 @@ namespace LoL_Generator
                 request.Headers.TryAddWithoutValidation("Authorization", "Basic " + Convert.ToBase64String(encoding));
 
                 //specifiy json data to be uploaded if the method is a POST or PUT request
-                if (method == "POST" || method == "PUT")
+                if ((method == "POST" || method == "PUT") && json != null)
                 {
                     request.Content = new StringContent(json);
                     request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");

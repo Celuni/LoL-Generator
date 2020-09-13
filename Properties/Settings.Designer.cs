@@ -176,5 +176,29 @@ namespace LoL_Generator.Properties {
                 this["CollapseCheckBox"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("one")]
+        public string team {
+            get {
+                return ((string)(this["team"]));
+            }
+            set {
+                this["team"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<Key>None</Key>")]
+        public global::System.Windows.Input.Key BotKey {
+            get {
+                return ((global::System.Windows.Input.Key)(this["BotKey"]));
+            }
+            set {
+                this["BotKey"] = value;
+            }
+        }
     }
 }

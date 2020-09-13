@@ -42,5 +42,12 @@
     <Setting Name="CollapseCheckBox" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="team" Type="System.String" Scope="User">
+      <Value Profile="(Default)">one</Value>
+    </Setting>
+    <Setting Name="BotKey" Type="System.Windows.Input.Key" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;Key&gt;None&lt;/Key&gt;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

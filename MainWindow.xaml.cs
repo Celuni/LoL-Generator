@@ -1,4 +1,7 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,7 +15,11 @@ namespace LoL_Generator
     public partial class MainWindow : Window
     {
         string keybinding;
+        string botkeybinding;
+
         HotKey _hotKey;
+        HotKey bot_hotKey;
+
         RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
         public MainWindow()
@@ -22,6 +29,9 @@ namespace LoL_Generator
 
             _hotKey = new HotKey(Properties.Settings.Default.Key, KeyModifier.Alt, OnHotKeyHandler);
             HotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.Key;
+
+            bot_hotKey = new HotKey(Properties.Settings.Default.BotKey, KeyModifier.Alt, CreateBotGame);
+            BotHotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.BotKey;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -82,12 +92,67 @@ namespace LoL_Generator
             EnableCheckBox.IsChecked = (EnableCheckBox.IsChecked == true) ? false : true;
         }
 
+        async void CreateBotGame(HotKey hotKey)
+        {
+            while (true)
+            {
+                try
+                {
+                    string createLobbyJson = "{\"customGameLobby\":{\"configuration\":{\"gameMode\":\"CLASSIC\",\"mapId\":11,\"mutators\": { \"id\": 1},\"spectatorPolicy\":\"NotAllowed\",\"teamSize\":5},\"lobbyName\":\"Name\",\"lobbyPassword\":\"password\"},\"isCustom\":true}";
+
+                    await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby", createLobbyJson);
+
+                    if (Properties.Settings.Default.team == "one")
+                    {
+                        await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/switch-teams?team=two", null);
+                        Properties.Settings.Default.team = "two";
+                    }
+                    else
+                    {
+                        Properties.Settings.Default.team = "one";
+                    }
+
+                    string botsJson = await App.SendRequestAsync("GET", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby/custom/available-bots", null);
+                    List<BotInfo> botsList = JsonConvert.DeserializeObject<List<BotInfo>>(botsJson);
+
+                    botsList.Remove(botsList.Find(x => x.id == 19));
+                    botsList.Remove(botsList.Find(x => x.id == 13));
+                    botsList.Remove(botsList.Find(x => x.id == 44));
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        Bot newBot = new Bot(botsList);
+
+                        string botJson = JsonConvert.SerializeObject(newBot);
+
+                        await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/bots", botJson);
+                    }
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+            }
+        }
+
         private void HotkeyTextboxClick(object sender, RoutedEventArgs e)
         {
-            ToggleTextBlock.Visibility = Visibility.Visible;
-            keybinding = HotkeyTextBox.Text;
+            if (HotkeyTextBox.IsFocused)
+            {
+                ToggleTextBlock.Visibility = Visibility.Visible;
+                keybinding = HotkeyTextBox.Text;
 
-            HotkeyTextBox.Text = "Alt + ";
+                HotkeyTextBox.Text = "Alt + ";
+            }
+            else
+            {
+                BotToggleTextBlock.Visibility = Visibility.Visible;
+                botkeybinding = HotkeyTextBox.Text;
+
+                BotHotkeyTextBox.Text = "Alt + ";
+            }
         }
 
         private void ReadKeys(object sender, KeyEventArgs e)
@@ -96,33 +161,72 @@ namespace LoL_Generator
 
             if (e.Key == Key.Escape)
             {
-                HotkeyTextBox.Text = keybinding;
+                if (HotkeyTextBox.IsFocused)
+                {
+                    HotkeyTextBox.Text = keybinding;
 
-                ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
-                ToggleTextBlock.Visibility = Visibility.Hidden;
+                    ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
+                    ToggleTextBlock.Visibility = Visibility.Hidden;
+                }
+                else
+                {
+                    BotHotkeyTextBox.Text = botkeybinding;
+
+                    BotToggleTextBlock.Text = "Press a Key, Esc to Cancel";
+                    BotToggleTextBlock.Visibility = Visibility.Hidden;
+                }
+                    
                 Keyboard.ClearFocus();
 
                 return;
             }
 
-            _hotKey.Dispose();
-            _hotKey = new HotKey(e.Key, KeyModifier.Alt, OnHotKeyHandler);
-
-            if (_hotKey.result)
+            if (HotkeyTextBox.IsFocused)
             {
-                HotkeyTextBox.Text = "Alt + " + e.Key.ToString();
+                _hotKey.Dispose();
+                _hotKey = new HotKey(e.Key, KeyModifier.Alt, OnHotKeyHandler);
+            }
+            else
+            {
+                bot_hotKey.Dispose();
+                bot_hotKey = new HotKey(e.Key, KeyModifier.Alt, CreateBotGame);
+            }
 
-                Properties.Settings.Default.Key = e.Key;
-                Properties.Settings.Default.Save();
+            if (_hotKey.result || bot_hotKey.result)
+            {
+                if (HotkeyTextBox.IsFocused)
+                {
+                    HotkeyTextBox.Text = "Alt + " + e.Key.ToString();
 
-                ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
-                ToggleTextBlock.Visibility = Visibility.Hidden;
+                    Properties.Settings.Default.Key = e.Key;
+
+                    ToggleTextBlock.Text = "Press a Key, Esc to Cancel";
+                    ToggleTextBlock.Visibility = Visibility.Hidden;
+                }
+                else
+                {
+                    BotHotkeyTextBox.Text = "Alt + " + e.Key.ToString();
+
+                    Properties.Settings.Default.BotKey = e.Key;
+
+                    BotToggleTextBlock.Text = "Press a Key, Esc to Cancel";
+                    BotToggleTextBlock.Visibility = Visibility.Hidden;
+                }
+                    
                 Keyboard.ClearFocus();
             }
             else
             {
-                keybinding = "Alt +";
-                ToggleTextBlock.Text = "Error: Invalid Key";
+                if (HotkeyTextBox.IsFocused)
+                {
+                    keybinding = "Alt +";
+                    ToggleTextBlock.Text = "Error: Invalid Key";
+                }
+                else
+                {
+                    botkeybinding = "Alt +";
+                    BotToggleTextBlock.Text = "Error: Invalid Key";
+                }
             }
         }
 
@@ -151,11 +255,6 @@ namespace LoL_Generator
             {
                 rkApp.DeleteValue("LoL Generator");
             }
-        }
-
-        private void CreateBotGame(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
