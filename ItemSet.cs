@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
+using System.Windows;
 
 namespace LoL_Generator
 {
@@ -159,7 +160,18 @@ namespace LoL_Generator
                     break;
             }
 
-            App.window.Dispatcher.Invoke(new Action(() => App.window.LoadoutProgress.Value += 1));
+            Action act = () =>
+            {
+                if (!Properties.Settings.Default.EnableInterfaceCheckBox)
+                {
+                    App.window.LoadoutProgress.Value += 1;
+                }
+                else if (Properties.Settings.Default.EnableInterfaceCheckBox && App.window.ChampionOverlay.Visibility == Visibility.Visible)
+                {
+                    App.window.IntLoadoutProgress.Value += 1;
+                }
+            };
+            App.window.Dispatcher.Invoke(act);
         }
 
         //retrieves item ids using XPath queries

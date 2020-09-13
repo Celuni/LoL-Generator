@@ -11,7 +11,6 @@ namespace LoL_Generator
     /// </summary>
     public partial class MainWindow : Window
     {
-        StackPanel lastWindow;
         string keybinding;
         HotKey _hotKey;
         RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
@@ -35,7 +34,7 @@ namespace LoL_Generator
 
         private void MoveWindow(object sender, MouseButtonEventArgs e)
         {
-           DragMove();
+            DragMove();
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)
@@ -52,8 +51,6 @@ namespace LoL_Generator
         {
             if (SettingsOverlay.Visibility == Visibility.Hidden)
             {
-                lastWindow = (WaitingOverlay.Visibility == Visibility.Visible) ? WaitingOverlay : ChampionOverlay;
-
                 if (WaitingOverlay.Visibility == Visibility.Visible)
                 {
                     WaitingOverlay.Visibility = Visibility.Hidden;
@@ -69,9 +66,9 @@ namespace LoL_Generator
             {
                 SettingsOverlay.Visibility = Visibility.Hidden;
 
-                if (!App.listedSets)
+                if (App.champion == default || !Properties.Settings.Default.EnableInterfaceCheckBox)
                 {
-                    lastWindow.Visibility = Visibility.Visible;
+                    WaitingOverlay.Visibility = Visibility.Visible;
                 }
                 else
                 {
@@ -154,6 +151,11 @@ namespace LoL_Generator
             {
                 rkApp.DeleteValue("LoL Generator");
             }
+        }
+
+        private void CreateBotGame(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

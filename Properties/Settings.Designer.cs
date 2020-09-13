@@ -152,5 +152,29 @@ namespace LoL_Generator.Properties {
                 this["WindowsStartupCheckbox"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool PopUpCheckBox {
+            get {
+                return ((bool)(this["PopUpCheckBox"]));
+            }
+            set {
+                this["PopUpCheckBox"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CollapseCheckBox {
+            get {
+                return ((bool)(this["CollapseCheckBox"]));
+            }
+            set {
+                this["CollapseCheckBox"] = value;
+            }
+        }
     }
 }
