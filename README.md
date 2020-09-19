@@ -1,9 +1,17 @@
-LoL Generator (In Development)
+LoL Generator
 =========================
 Description
 -------------------
-Automatically generates rune pages and itemsets in League of Legends. Uses C# with WPF for the UI.
+This program generates rune pages and itemsets in League of Legends with the options for manual and automatic generation. It detects if the league client is open and connects with the Riot Games API to upload loadouts whenever a champion is locked. Data is collected through web scrapping the popular League of Legends stat-tracking website, https://na.op.gg/. It is programmed using C# with WPF for the UI.
 
-Preview  
+How to run project
+--------------------  
+Coming Soon...
+
+Pictures  
 --------
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/1fBZkNv/image.png" alt="image" border="0" /></a>
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/0mX6x4S/lolgen-1.png" alt="lolgen-1" border="0" /></a>
+
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/v1VrDkq/lol-gen3.png" alt="lol-gen3" border="0" /></a>
+
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/mbZbrJY/lol-gen2.png" alt="lol-gen2" border="0" /></a>
