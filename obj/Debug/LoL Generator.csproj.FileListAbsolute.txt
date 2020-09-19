@@ -24,6 +24,10 @@ C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL_Generator.Properties.Re
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.GenerateResource.cache
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CoreCompileInputs.cache
 C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csproj.CopyComplete
-C:\Users\tavinc\source\repos\LoL Generator\obj\Debug\LoL Generator.csprojAssemblyReference.cache
 C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoadingIcon.baml
 C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoadingIcon.g.cs
+C:\Users\tavinc\source\repos\Lol Generator\bin\Debug\LoL Generator.exe.manifest
+C:\Users\tavinc\source\repos\Lol Generator\bin\Debug\LoL Generator.application
+C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoL Generator.csprojAssemblyReference.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoL Generator.exe.manifest
+C:\Users\tavinc\source\repos\Lol Generator\obj\Debug\LoL Generator.application

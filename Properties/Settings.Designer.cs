@@ -200,5 +200,29 @@ namespace LoL_Generator.Properties {
                 this["BotKey"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoHotkeyCheckbox {
+            get {
+                return ((bool)(this["AutoHotkeyCheckbox"]));
+            }
+            set {
+                this["AutoHotkeyCheckbox"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool BotHotkeyCheckbox {
+            get {
+                return ((bool)(this["BotHotkeyCheckbox"]));
+            }
+            set {
+                this["BotHotkeyCheckbox"] = value;
+            }
+        }
     }
 }

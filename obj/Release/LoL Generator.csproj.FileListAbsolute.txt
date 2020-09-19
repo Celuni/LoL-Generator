@@ -1,0 +1,33 @@
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\LoL Generator.exe.config
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\LoL Generator.exe.manifest
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\LoL Generator.application
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\LoL Generator.exe
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\LoL Generator.pdb
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\Hardcodet.Wpf.TaskbarNotification.dll
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\HtmlAgilityPack.dll
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\Newtonsoft.Json.dll
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\Hardcodet.Wpf.TaskbarNotification.pdb
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\Hardcodet.Wpf.TaskbarNotification.xml
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\HtmlAgilityPack.pdb
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\HtmlAgilityPack.xml
+C:\Users\tavinc\source\repos\Lol Generator\bin\Release\Newtonsoft.Json.xml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.csprojAssemblyReference.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoadingIcon.baml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\App.baml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoadingIcon.g.cs
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\MainWindow.g.cs
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\App.g.cs
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\GeneratedInternalTypeHelper.g.cs
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator_MarkupCompile.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator_MarkupCompile.lref
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\MainWindow.baml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\NotifyIconResources.baml
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.g.resources
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL_Generator.Properties.Resources.resources
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.csproj.GenerateResource.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.csproj.CoreCompileInputs.cache
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.exe.manifest
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.application
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.csproj.CopyComplete
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.exe
+C:\Users\tavinc\source\repos\Lol Generator\obj\Release\LoL Generator.pdb
