@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <asmv1:assemblyIdentity name="LoL Generator.exe" version="1.0.0.3" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+  <asmv1:assemblyIdentity name="LoL Generator.exe" version="1.0.0.9" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
   <description asmv2:iconFile="images\568253.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
@@ -67,14 +67,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoL Generator.exe" size="406504">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="LoL Generator.exe" size="407528">
       <assemblyIdentity name="LoL Generator" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>P53v2PgrmspTFlm0eOFJPZNijW8D3jhfUjUVV/qYQsM=</dsig:DigestValue>
+        <dsig:DigestValue>uj7uFQUR339QP9wQ9eVH/5FRd96O1+RZBuPNwrcAOqs=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -99,13 +99,13 @@
       <dsig:DigestValue>fxrJZgvTtk/siXuU1Pcw7v5cX1wv2OepiGrxDFBJgeY=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="LoL Generator.exe.config" size="2779">
+  <file name="LoL Generator.exe.config" size="2781">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>kSVXlJ0EkfcoHMQoTP/zJEZ3ZXxubFHcHcVzVbeuXHM=</dsig:DigestValue>
+      <dsig:DigestValue>z/E1f7zlKTMOcXrGmbOrn8kHFCHXNc2VRmGC/Ha2ZtU=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

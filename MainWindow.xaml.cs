@@ -27,8 +27,18 @@ namespace LoL_Generator
             //initiate window
             InitializeComponent();
 
-            HotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.Key;
+            try
+            {
+                _hotKey = new HotKey(Properties.Settings.Default.Key, KeyModifier.Alt, OnHotKeyHandler);
 
+                bot_hotKey = new HotKey(Properties.Settings.Default.BotKey, KeyModifier.Alt, CreateBotGame);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+
+            HotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.Key;
             BotHotkeyTextBox.Text = "Alt + " + Properties.Settings.Default.BotKey;
         }
 
@@ -108,49 +118,46 @@ namespace LoL_Generator
 
         async void CreateBotGame(HotKey hotKey)
         {
-            if (OnlineInd.Visibility == Visibility.Visible)
+            try
             {
-                while (true)
+                while (OnlineInd.Visibility == Visibility.Visible)
                 {
-                    try
+                    string createLobbyJson = "{\"customGameLobby\":{\"configuration\":{\"gameMode\":\"CLASSIC\",\"mapId\":11,\"mutators\": { \"id\": 1},\"spectatorPolicy\":\"NotAllowed\",\"teamSize\":5},\"lobbyName\":\"Name\",\"lobbyPassword\":\"password\"},\"isCustom\":true}";
+
+                    await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby", createLobbyJson);
+
+                    if (Properties.Settings.Default.team == "one")
                     {
-                        string createLobbyJson = "{\"customGameLobby\":{\"configuration\":{\"gameMode\":\"CLASSIC\",\"mapId\":11,\"mutators\": { \"id\": 1},\"spectatorPolicy\":\"NotAllowed\",\"teamSize\":5},\"lobbyName\":\"Name\",\"lobbyPassword\":\"password\"},\"isCustom\":true}";
-
-                        await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby", createLobbyJson);
-
-                        if (Properties.Settings.Default.team == "one")
-                        {
-                            await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/switch-teams?team=two", null);
-                            Properties.Settings.Default.team = "two";
-                        }
-                        else
-                        {
-                            Properties.Settings.Default.team = "one";
-                        }
-
-                        string botsJson = await App.SendRequestAsync("GET", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby/custom/available-bots", null);
-                        List<BotInfo> botsList = JsonConvert.DeserializeObject<List<BotInfo>>(botsJson);
-
-                        botsList.Remove(botsList.Find(x => x.id == 19));
-                        botsList.Remove(botsList.Find(x => x.id == 13));
-                        botsList.Remove(botsList.Find(x => x.id == 44));
-
-                        for (int i = 0; i < 5; i++)
-                        {
-                            Bot newBot = new Bot(botsList);
-
-                            string botJson = JsonConvert.SerializeObject(newBot);
-
-                            await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/bots", botJson);
-                        }
-
-                        break;
+                        await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/switch-teams?team=two", null);
+                        Properties.Settings.Default.team = "two";
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine("Error: " + ex.Message);
+                        Properties.Settings.Default.team = "one";
                     }
+
+                    string botsJson = await App.SendRequestAsync("GET", $"https://127.0.0.1:{App.port}/lol-lobby/v2/lobby/custom/available-bots", null);
+                    List<BotInfo> botsList = JsonConvert.DeserializeObject<List<BotInfo>>(botsJson);
+
+                    botsList.Remove(botsList.Find(x => x.id == 19));
+                    botsList.Remove(botsList.Find(x => x.id == 13));
+                    botsList.Remove(botsList.Find(x => x.id == 44));
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        Bot newBot = new Bot(botsList);
+
+                        string botJson = JsonConvert.SerializeObject(newBot);
+
+                        await App.SendRequestAsync("POST", $"https://127.0.0.1:{App.port}/lol-lobby/v1/lobby/custom/bots", botJson);
+                    }
+                    
+                    break;
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
             }
         }
 
