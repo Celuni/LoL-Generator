@@ -6,7 +6,6 @@ This program generates rune pages and itemsets in League of Legends with the opt
 
 Installation
 --------------------
-Requries Windows 10 
 1. Download latest [release](https://github.com/choktn/LoL-Generator/releases).
 2. Extract zip file and run setup.exe.
 
