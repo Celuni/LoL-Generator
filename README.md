@@ -4,9 +4,14 @@ Description
 -------------------
 This program generates rune pages and itemsets in League of Legends with the options for manual and automatic generation. It detects if the league client is open and connects with the Riot Games API to upload loadouts whenever a champion is locked. Data is collected through web scrapping the popular League of Legends stat-tracking website, https://na.op.gg/. It is programmed using C# with WPF for the UI.
 
-How to run project
+Installation
+--------------------
+1. Download latest [release](https://github.com/choktn/LoL-Generator/releases).
+2. Extract zip file and run setup.exe.
+
+How To Use
 --------------------  
-Coming Soon...
+Simply run the program, get into champion select and lock in a champion, the program will automatically generate a rune page and item set. There is also various settings available to customize automatic generation (e.g. toggling, generating only rune pages etc.)
 
 Pictures  
 --------
